@@ -24,7 +24,7 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
 **Представление v_sessions_final** - денормализует данные по моделям авто и курсам валют, а также расчитывает метрики
 
 #### Диаграмма базы данных Car_Dealer_GA_CRM
-<img width="932" height="698" alt="db_diagram" src="https://github.com/user-attachments/assets/e516b37d-0477-481b-a543-ad231f6f96be" />
+<img width="932" height="698" alt="db_diagram" src="carDealer_screens/db_diagram.png" />
 
 ## Структура Power BI
 **Модель данных:**
@@ -32,7 +32,7 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
   - Таблица, созданая в Power Query PBI, для агрегации по неделям Calendar
   - Набор мер
 
-<img width="1088" height="684" alt="модель_данныхPBI" src="https://github.com/user-attachments/assets/9a1532e5-01de-414a-8ecf-7988d7cbccab" />
+<img width="1088" height="684" alt="модель_данныхPBI" src="carDealer_screens/модель_данныхPBI.png" />
 
 **Фильтры:**
   - по дате
@@ -41,27 +41,27 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
   - по типу трафика, кампании и ключевым словам
   - по устройству, браузеру и сайту
 
-<img width="1590" height="113" alt="filters" src="https://github.com/user-attachments/assets/c26a3818-a114-4bc8-a557-9ea56e879c1d" />
+<img width="1590" height="113" alt="filters" src="carDealer_screens/filters.png" />
 
 **Визуализации:**
 1. "Реализация конверсий по неделям" - отражает изменение кол-ва конверсий и их реализацию в течении времени, 'воронка продаж в линейном графике по неделям'.
-<img width="680" height="333" alt="chart1" src="https://github.com/user-attachments/assets/acf98179-6128-4551-8eb3-0510394ea528" />
+<img width="680" height="333" alt="chart1" src="carDealer_screens/chart1.png" />
 
 2. "Трафик конверсий по неделям" - отражает источники трафика и их эффективность в течении времени.
-<img width="680" height="411" alt="chart2" src="https://github.com/user-attachments/assets/f69f0663-04fa-4f7a-aa11-aba9004e7a1f" />
+<img width="680" height="411" alt="chart2" src="carDealer_screens/chart2.png" />
 
 3. "Марка: доля конв. | ДРР" - отражает кол-во и эффективность конверсий и продаж марок и моделей авто.
-<img width="446" height="331" alt="chart3" src="https://github.com/user-attachments/assets/608bfca4-97a9-4e32-bf8f-4e0aad8732de" />
+<img width="446" height="331" alt="chart3" src="carDealer_screens/chart3.png" />
 
 4. "Устройство: доля конв. | ДРР" - отражает кол-во и эффективность конверсий и продаж по типам устройств, браузерам и сайтам.
-<img width="444" height="410" alt="chart4" src="https://github.com/user-attachments/assets/f2ebce44-cf65-43fd-8678-83446c6d5083" />
+<img width="444" height="410" alt="chart4" src="carDealer_screens/chart4.png" />
 
 5. "Город: доля конв. | ДРР" - отражает кол-во и эффективность конверсий и продаж по городам, кампаниям и ключевым словам.
-<img width="422" height="316" alt="chart5" src="https://github.com/user-attachments/assets/9e82a845-c75c-4ecc-8e38-e9b6e7b19b76" />
+<img width="422" height="316" alt="chart5" src="carDealer_screens/chart5.png" />
 
 6. "Убытки по кампаниям и keywords" - отражает убыточные кампании и ключевые слова.
-<img width="446" height="412" alt="chart6" src="https://github.com/user-attachments/assets/276b88f7-0f3f-474a-824e-f5f03287cebb" />
+<img width="446" height="412" alt="chart6" src="carDealer_screens/chart6.png" />
 
 **Справка по графикам и метрикам:**
 
-<img width="736" height="403" alt="справка_PBI" src="https://github.com/user-attachments/assets/24b0ca99-9f87-45d0-b722-70d9ced4239d" />
+<img width="736" height="403" alt="справка_PBI" src="carDealer_screens/справка_PBI.png" />
