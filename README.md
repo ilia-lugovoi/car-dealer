@@ -96,3 +96,5 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
 
 * **Корреляция продаж к просмотренным страницам**
 <img width="783" height="457" alt="chart4" src="carDealer_screens/superset_charts/chart4.png" />
+
+![car-dealer-2026-04-07T19-33-13 999Z](carDealer_screens/superset_charts/car-dealer-2026-04-07T19-33-13.999Z.jpg)
