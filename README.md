@@ -61,4 +61,5 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
     <img width="446" height="412" alt="chart6" src="https://github.com/user-attachments/assets/276b88f7-0f3f-474a-824e-f5f03287cebb" />
 
 **Справка по графикам и метрикам:**
+
 <img width="736" height="403" alt="справка_PBI" src="https://github.com/user-attachments/assets/24b0ca99-9f87-45d0-b722-70d9ced4239d" />
