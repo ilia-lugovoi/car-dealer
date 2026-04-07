@@ -27,13 +27,13 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
 <img width="932" height="698" alt="db_diagram" src="https://github.com/user-attachments/assets/e516b37d-0477-481b-a543-ad231f6f96be" />
 
 ## Структура Power BI
-* **Модель данных:**
+**Модель данных:**
   - Две основные таблицы и справочник Medium
   - Таблица, созданая в Power Query PBI, для агрегации по неделям Calendar
   - Набор мер
 <img width="1088" height="684" alt="модель_данныхPBI" src="https://github.com/user-attachments/assets/9a1532e5-01de-414a-8ecf-7988d7cbccab" />
 
-* **Фильтры:**
+**Фильтры:**
   - по дате
   - по марке и модели
   - по региону и городу
@@ -41,7 +41,7 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
   - по устройству, браузеру и сайту
 <img width="1590" height="113" alt="filters" src="https://github.com/user-attachments/assets/c26a3818-a114-4bc8-a557-9ea56e879c1d" />
 
-* **Визуализации:**
+**Визуализации:**
 1. "Реализация конверсий по неделям" - отражает изменение кол-ва конверсий и их реализацию в течении времени, 'воронка продаж в линейном графике по неделям'.
    <img width="680" height="333" alt="chart1" src="https://github.com/user-attachments/assets/acf98179-6128-4551-8eb3-0510394ea528" />
 
@@ -60,6 +60,5 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
 11. "Убытки по кампаниям и keywords" - отражает убыточные кампании и ключевые слова.
     <img width="446" height="412" alt="chart6" src="https://github.com/user-attachments/assets/276b88f7-0f3f-474a-824e-f5f03287cebb" />
 
-
-* **Справка по графикам и метрикам:**
+**Справка по графикам и метрикам:**
 <img width="736" height="403" alt="справка_PBI" src="https://github.com/user-attachments/assets/24b0ca99-9f87-45d0-b722-70d9ced4239d" />
