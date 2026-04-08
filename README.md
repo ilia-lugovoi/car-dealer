@@ -6,7 +6,8 @@
 3. Создание дашборда для анализа выручки и просмотров сайта автодилера в Superset
 
 ## Основные используемые технологии
-Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Python (requests, pyodbc, pandas, time), Парсинг
+* SQL Server, Views, Excel, Python (requests, pyodbc, pandas, time), Парсинг
+* Power BI (Power Query, DAX, Power View), Superset, Docker
 
 ## Структура базы данных
 **Основные таблицы:**
