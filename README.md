@@ -63,6 +63,9 @@ Power BI (Power Query, DAX, Power View), Superset, SQL Server, Views, Excel, Pyt
 6. "Убытки по кампаниям и keywords" - отражает убыточные кампании и ключевые слова.
 <img width="446" height="412" alt="chart6" src="carDealer_screens/PBI_charts/chart6.png" />
 
+<img width="1592" height="865" alt="full_screen" src="carDealer_screens/PBI_charts/full_screen.png" />
+
+
 ### **Справка по графикам и метрикам:**
 
 <img width="736" height="403" alt="справка_PBI" src="carDealer_screens/PBI_charts/справка_PBI.png" />
