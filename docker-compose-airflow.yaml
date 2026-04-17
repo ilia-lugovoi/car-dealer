@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  airflow:
+    image: puckel/docker-airflow:1.10.9 # Легкий образ для обучения
+    restart: always
+    container_name: airflow_autodealer
+    volumes:
+      - ./airflow/dags:/usr/local/airflow/dags
+    ports:
+      - "8081:8080" # Сделаем 8081, т.к. 8080 может быть занят Superset
+    command: webserver
