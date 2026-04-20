@@ -1,3 +1,7 @@
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime, timedelta
+import pyodbc
 import clickhouse_connect
 
 def mssql_to_clickhouse():
