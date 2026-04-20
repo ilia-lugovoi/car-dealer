@@ -17,3 +17,4 @@ USER airflow
 
 # Устанавливаем библиотеки Python
 RUN pip install pyodbc requests
+RUN pip install pyodbc requests clickhouse-connect
