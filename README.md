@@ -1,107 +1,168 @@
 # Сквозная аналитика автодилера
 
-## Цель проекта
-1. Спроектировать и развернуть реляционную БД, объединяющую данные из Google Analytics (сессии, воронка), CRM (продажи) и внешних API (курсы валют ЦБ РФ).
-2. Настроить оркестрацию данных (постоянную выгрузку новых курсов валют) через Apache Airflow.
-3. Создание дашборда для анализа конверсий с продажами, оценки ROI рекламных каналов и выявления убыточных кампаний в Power BI.
-4. Создание дашборда для анализа выручки и просмотров сайта автодилера в Apache Superset.
+## О проекте
+Проект моделирует сквозную аналитику автодилера от сырых данных до BI-витрин.
 
-## Основные используемые технологии
-* SQL, Views, Excel, Python (requests, pyodbc, pandas, time), Apache Airflow, Docker
-* Power BI (Power Query, DAX, Power View), Superset, Docker
+Источники в проекте:
+- `CarDealer.xlsx` как исходный учебный датасет
+- Google Analytics сессии
+- CRM-события и продажи
+- курсы валют ЦБ РФ
 
-## Структура базы данных
-**Основные таблицы:**
-* Client - таблица с данными о клиентах
-* Session - таблица с данными по сессиям с Google Analytics и воронкой их реализации
+Цель проекта:
+- собрать данные в MS SQL
+- оркестрировать ежедневное обновление курсов через Airflow
+- построить управляемый слой трансформаций через dbt
+- подготовить BI-витрины для Power BI и Superset
+- выгрузить итоговые витрины в ClickHouse
 
-**Справочники:**
-* Model - справочник моделей авто 
-* Medium - справочник типов рекламы
-* CurrencyRates - справочник курсов валют по дням
+## Технологии
+- MS SQL Server
+- Python: `pyodbc`, `pandas`, `requests`, `openpyxl`
+- Apache Airflow
+- dbt (`dbt-sqlserver`)
+- Docker
+- ClickHouse
+- Power BI
+- Apache Superset
 
-**Процесс заполнения CurrencyRates полностью автоматизирован с помощью Python и DAG Airflow**
-  1. Скрипт на парсинг курсов валют с сайта ЦБ РФ за выбранные даты
-  2. DAG-скрипт на постоянную выгрузку новых курсов валют с сайта ЦБ РФ
+## Текущая архитектура
+Пайплайн в проекте сейчас выглядит так:
 
-#### Список запусков DAG
-<img width="1698" height="767" alt="list_dag_run" src="carDealer_screens/list_dag_run.png" />
+1. Подготовка данных в `CarDealer.xlsx`
+2. Скрипт [excel_to_db_csv.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/excel_to_db_csv.py)
+   - загружает таблицы в MS SQL
+   - параллельно сохраняет их в `csv`
+3. Скрипт [update_rates.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/update_rates.py)
+   - создаёт и обновляет `dbo.currency_rates`
+   - забирает исторические и ежедневные курсы ЦБ РФ
+4. Airflow DAG [auto_dealer_dag.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/airflow/dags/auto_dealer_dag.py)
+   - ежедневно обновляет курсы
+   - запускает `dbt build`
+5. dbt-проект [car_dealer_dbt](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/car_dealer_dbt)
+   - `staging` очищает источники
+   - `intermediate` считает бизнес-логику
+   - `marts/views` создаёт BI-view
+6. Итоговые витрины:
+   - `dbo.v_sessions`
+   - `dbo.v_clients`
+   - `dbo.v_medium`
+7. Эти витрины вручную выгружаются в ClickHouse
+8. ClickHouse используется как источник для Power BI и Superset
 
-**Представление v_sessions_final** - денормализует данные по моделям авто и курсам валют, а также расчитывает метрики
+## dbt-слои
+### `staging`
+Grain и структура источников приводятся к удобному виду:
+- `stg_ga_sessions`
+- `stg_sales`
+- `stg_models`
+- `stg_currencies`
+- `stg_currency_rates`
+- `stg_clients`
+- `stg_crm_events`
+- `stg_mediums`
 
-#### Диаграмма базы данных Car_Dealer_GA_CRM
-<img width="932" height="698" alt="db_diagram" src="carDealer_screens/db_diagram.png" />
+### `intermediate`
+Промежуточная бизнес-логика:
+- `int_models_with_currency`
+- `int_session_crm`
+- `int_sales`
 
-## Структура Power BI
-### **Модель данных:**
-  - Две основные таблицы и справочник Medium
-  - Таблица, созданая в Power Query PBI, для агрегации по неделям Calendar
-  - Набор мер
+В этом слое считаются:
+- `price_rub`
+- `gross_profit_rub`
+- `ad_spend_share`
 
-<img width="1088" height="684" alt="модель_данныхPBI" src="carDealer_screens/PBI_charts/модель_данныхPBI.png" />
+### `views`
+Итоговые витрины для BI:
+- `v_sessions`
+  - grain: `1 row = 1 session`
+- `v_clients`
+  - grain: `1 row = 1 client_id`
+- `v_medium`
+  - grain: `1 row = 1 medium`
 
-### **Фильтры:**
-  - по дате
-  - по марке и модели
-  - по региону и городу
-  - по типу трафика, кампании и ключевым словам
-  - по устройству, браузеру и сайту
+## Airflow
+Airflow запущен в Docker и доступен по адресу:
+- [http://localhost:8081](http://localhost:8081)
 
-<img width="1590" height="113" alt="filters" src="carDealer_screens/PBI_charts/filters.png" />
+Используется для:
+- ежедневной загрузки свежих курсов валют
+- запуска `dbt build`
 
-### **Визуализации:**
-1. "Реализация конверсий по неделям" - отражает изменение кол-ва конверсий и их реализацию в течении времени, 'воронка продаж в линейном графике по неделям'.
-<img width="680" height="333" alt="chart1" src="carDealer_screens/PBI_charts/chart1.png" />
+## ClickHouse
+ClickHouse запущен как отдельный сервис проекта в Docker.
 
-2. "Трафик конверсий по неделям" - отражает источники трафика и их эффективность в течении времени.
-<img width="680" height="411" alt="chart2" src="carDealer_screens/PBI_charts/chart2.png" />
+Порты проекта:
+- HTTP: `8124`
+- Native: `9001`
 
-3. "Марка: доля конв. | ДРР" - отражает кол-во и эффективность конверсий и продаж марок и моделей авто.
-<img width="446" height="331" alt="chart3" src="carDealer_screens/PBI_charts/chart3.png" />
+Параметры подключения:
+- host: `127.0.0.1`
+- database: `car_dealer`
+- user: `analytics`
+- password: `analytics`
 
-4. "Устройство: доля конв. | ДРР" - отражает кол-во и эффективность конверсий и продаж по типам устройств, браузерам и сайтам.
-<img width="444" height="410" alt="chart4" src="carDealer_screens/PBI_charts/chart4.png" />
+DDL-скрипты для ClickHouse лежат в:
+- [sql/clickhouse](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/sql/clickhouse)
 
-5. "Город: доля конв. | ДРР" - отражает кол-во и эффективность конверсий и продаж по городам, кампаниям и ключевым словам.
-<img width="422" height="316" alt="chart5" src="carDealer_screens/PBI_charts/chart5.png" />
+### Что важно при ручной загрузке CSV в ClickHouse
+- сначала создаётся структура таблицы
+- потом в неё загружаются данные
+- для `SSMS`-CSV с `NULL` нужно использовать:
+  - `--format_csv_null_representation='NULL'`
+- для широкой витрины `v_sessions` лучше использовать `;` как разделитель
+- при повторной полной загрузке таблицу лучше очищать через `TRUNCATE TABLE`
 
-6. "Убытки по кампаниям и keywords" - отражает убыточные кампании и ключевые слова.
-<img width="446" height="412" alt="chart6" src="carDealer_screens/PBI_charts/chart6.png" />
+## BI
+### Power BI
+Power BI подключается к ClickHouse и использует:
+- `v_sessions`
+- `v_clients`
+- `v_medium`
 
-![интерактивность_дашборда](carDealer_screens/PBI_charts/интерактивность_дашборда.gif)
+<!-- Добавить скрин подключения Power BI к ClickHouse -->
+<!-- Добавить новый скрин модели данных Power BI -->
+<!-- Добавить новые скрины визуализаций Power BI -->
 
-### **Справка по графикам и метрикам:**
+### Superset
+Superset запущен как отдельный сервис проекта в Docker и доступен по адресу:
+- [http://localhost:8089/login/](http://localhost:8089/login/)
 
-<img width="736" height="403" alt="справка_PBI" src="carDealer_screens/PBI_charts/справка_PBI.png" />
+Используется для подключения к ClickHouse и построения альтернативных BI-визуализаций.
 
-## Структура Superset
-### **Datasets:**
-**v_sessions_final** - единственое, что отличается от представления с БД - это добавление метрик
+<!-- Добавить скрин подключения Superset к ClickHouse -->
+<!-- Добавить скрин datasets в Superset -->
+<!-- Добавить новые скрины дашборда Superset -->
 
-<img width="994" height="670" alt="df_view" src="carDealer_screens/superset_charts/df_view.png" />
+## Docker-сервисы проекта
+Текущий `docker-compose` поднимает:
+- Airflow
+- служебный Postgres для Airflow
+- ClickHouse
+- Superset
+- служебный Postgres для Superset
 
-**client_chart** - соединенные и агрегированные v_sessions_final с Client
+## Как запустить проект
+Из папки [car-dealer](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer):
 
-<img width="951" height="488" alt="df_client_chart" src="carDealer_screens/superset_charts/df_client_chart.png" />
+```powershell
+docker compose up -d --build
+```
 
-<img width="1664" height="872" alt="df_list" src="carDealer_screens/superset_charts/df_list.png" />
+После этого:
+- Airflow: [http://localhost:8081](http://localhost:8081)
+- Superset: [http://localhost:8089/login/](http://localhost:8089/login/)
 
-### **Фильтры и визуализации:**
+## Что в проекте уже автоматизировано
+- загрузка raw-данных из Excel в MS SQL
+- выгрузка raw-таблиц в CSV
+- создание и ежедневное обновление `currency_rates`
+- трансформации и тесты в dbt
 
-**Фильтры по всем основным атрибутам**
+## Что сейчас делается вручную
+- выгрузка `dbo.v_sessions`, `dbo.v_clients`, `dbo.v_medium` из MS SQL в CSV
+- загрузка этих CSV в ClickHouse
+- подключение ClickHouse к BI-инструментам
 
-<img width="281" height="470" alt="filters" src="carDealer_screens/superset_charts/filters.png" />
-
-* **Топ-15 городов по валовой прибыли**
-<img width="656" height="589" alt="chart1" src="carDealer_screens/superset_charts/chart1.png" />
-
-* **Валовая прибыль по маркам и моделям авто**
-<img width="919" height="585" alt="chart2" src="carDealer_screens/superset_charts/chart2.png" />
-
-* **Динамика валовой прибыли и DRR по неделям**
-<img width="785" height="456" alt="chart3" src="carDealer_screens/superset_charts/chart3.png" />
-
-* **Корреляция продаж к просмотренным страницам**
-<img width="783" height="457" alt="chart4" src="carDealer_screens/superset_charts/chart4.png" />
-
-![car-dealer-2026-04-07T19-33-13 999Z](carDealer_screens/superset_charts/car-dealer-2026-04-07T19-33-13.999Z.jpg)
+Это оставлено вручную специально как учебный этап, чтобы понять работу ClickHouse с нуля.

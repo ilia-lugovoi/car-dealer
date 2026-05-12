@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: stg_clients
+    description: "Очищенный staging-слой клиентов. Grain: 1 row = 1 client_id."
+    columns:
+      - name: client_id
+        tests: [not_null, unique]
+  - name: stg_crm_events
+    description: "Очищенный staging-слой CRM-событий. Grain: 1 row = 1 CRM event."
+    columns:
+      - name: client_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: dealer_meet
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: crm_sale
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+  - name: stg_currencies
+    description: "Очищенный staging-слой валют. Grain: 1 row = 1 currency."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: currency_code
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ['CNY', 'USD', 'EUR', 'RUB']
+  - name: stg_mediums
+    description: "Очищенный staging-слой маркетинговых каналов. Grain: 1 row = 1 medium."
+    columns:
+      - name: medium_name
+        tests: [not_null, unique]
+  - name: stg_models
+    description: "Очищенный staging-слой моделей автомобилей. Grain: 1 row = 1 model."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: currency_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_currencies')
+                field: id
+  - name: stg_currency_rates
+    description: "Очищенный staging-слой курсов валют ЦБ. Grain: 1 row = 1 currency_code + rate_date."
+    columns:
+      - name: rate_date
+        tests: [not_null]
+      - name: currency_code
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_currencies')
+                field: currency_code
+  - name: stg_ga_sessions
+    description: "Очищенный staging-слой GA-сессий. Grain: 1 row = 1 session."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: client_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: medium
+        tests:
+          - relationships:
+              arguments:
+                to: ref('stg_mediums')
+                field: medium_name
+      - name: conversion
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: sale
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: model_ga_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('stg_models')
+                field: id
+  - name: stg_sales
+    description: "Очищенный staging-слой продаж. Grain: 1 row = 1 sale."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: client_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: model_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_models')
+                field: id

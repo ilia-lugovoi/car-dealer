@@ -1,0 +1,31 @@
+[0m12:56:08.502038 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e470e850>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e21135d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e1c50f50>]}
+
+
+============================== 12:56:08.509171 | 51859bb7-cd59-4a06-8322-d3469b3128fb ==============================
+[0m12:56:08.509171 [info ] [MainThread]: Running with dbt=1.11.9
+[0m12:56:08.510539 [debug] [MainThread]: running dbt with arguments {'introspect': 'True', 'printer_width': '80', 'invocation_command': 'dbt init car_dealer_dbt', 'no_print': 'None', 'fail_fast': 'False', 'write_json': 'True', 'indirect_selection': 'eager', 'cache_selected_only': 'False', 'log_path': 'logs', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'empty': 'None', 'version_check': 'True', 'static_parser': 'True', 'log_cache_events': 'False', 'use_experimental_parser': 'False', 'profiles_dir': '/home/airflow/.dbt', 'warn_error': 'None', 'use_colors': 'True', 'send_anonymous_usage_stats': 'True', 'partial_parse': 'True', 'log_format': 'default', 'debug': 'False', 'quiet': 'False'}
+[0m12:56:08.524598 [info ] [MainThread]: Creating dbt configuration folder at /home/airflow/.dbt
+[0m12:56:08.531437 [debug] [MainThread]: Starter project path: /home/airflow/.local/lib/python3.11/site-packages/dbt/include/starter_project
+[0m12:56:08.673898 [info ] [MainThread]: 
+Your new dbt project "car_dealer_dbt" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m12:56:08.674994 [info ] [MainThread]: Setting up your profile.
+[0m13:00:34.317243 [info ] [MainThread]: Profile car_dealer_dbt written to /home/airflow/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
+[0m13:00:34.321262 [debug] [MainThread]: Resource report: {"command_name": "init", "command_success": true, "command_wall_clock_time": 265.88043, "process_in_blocks": "0", "process_kernel_time": 0.654377, "process_mem_max_rss": "127652", "process_out_blocks": "8", "process_user_time": 1.714227}
+[0m13:00:34.323811 [debug] [MainThread]: Command `dbt init` succeeded at 13:00:34.323613 after 265.88 seconds
+[0m13:00:34.325391 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e1c52e10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e32351d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e6554110>]}
+[0m13:00:34.326609 [debug] [MainThread]: Flushing usage events
+[0m13:00:35.787448 [debug] [MainThread]: An error was encountered while trying to flush usage events

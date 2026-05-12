@@ -7,17 +7,96 @@ services:
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=P2NVw8PhcsyBdyuDuYGSM_3N_DHD_bdhM5szpe1m
+      - _AIRFLOW_WWW_USER_FIRSTNAME=Ilya
+      - _AIRFLOW_WWW_USER_LASTNAME=Lugovoi
+      - _AIRFLOW_WWW_USER_ROLE=Admin
+      - _AIRFLOW_WWW_USER_EMAIL=admin@example.com
+      - MSSQL_SERVER=host.docker.internal
+      - MSSQL_PORT=1433
+      - MSSQL_DATABASE=car_dealer
+      - MSSQL_USER=airflow
+      - MSSQL_PASSWORD=airflow_pass
+      - MSSQL_TRUSTED_CONNECTION=False
+      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_PORT=8123
+      - CLICKHOUSE_DATABASE=car_dealer
+      - CLICKHOUSE_USER=analytics
+      - CLICKHOUSE_PASSWORD=analytics
     volumes:
+      - .:/opt/airflow/project
       - ./airflow/dags:/opt/airflow/dags
     ports:
       - "8081:8080"
     command: standalone
     depends_on:
       - postgres
+      - clickhouse
 
   postgres:
     image: postgres:13
+    container_name: airflow_postgres_autodealer
     environment:
       - POSTGRES_USER=airflow
       - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
+    volumes:
+      - airflow_postgres_data:/var/lib/postgresql/data
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: clickhouse_autodealer
+    environment:
+      - CLICKHOUSE_DB=car_dealer
+      - CLICKHOUSE_USER=analytics
+      - CLICKHOUSE_PASSWORD=analytics
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    ports:
+      - "8124:8123"
+      - "9001:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+  superset_db:
+    image: postgres:14
+    container_name: superset_postgres_autodealer
+    environment:
+      - POSTGRES_USER=superset
+      - POSTGRES_PASSWORD=superset
+      - POSTGRES_DB=superset
+    volumes:
+      - superset_postgres_data:/var/lib/postgresql/data
+
+  superset:
+    build:
+      context: .
+      dockerfile: superset/Dockerfile
+    container_name: superset_autodealer
+    environment:
+      - SUPERSET_CONFIG_PATH=/app/pythonpath/superset_config.py
+      - SUPERSET_ADMIN_USERNAME=admin
+      - SUPERSET_ADMIN_PASSWORD=P2NVw8PhcsyBdyuDuYGSM_3N_DHD_bdhM5szpe1m
+      - SUPERSET_ADMIN_FIRSTNAME=Ilya
+      - SUPERSET_ADMIN_LASTNAME=Lugovoi
+      - SUPERSET_ADMIN_EMAIL=admin@example.com
+    ports:
+      - "8089:8088"
+    volumes:
+      - superset_home:/app/superset_home
+    depends_on:
+      - superset_db
+      - clickhouse
+    command: >
+      /bin/sh -c "
+      superset db upgrade &&
+      superset fab create-admin --username $$SUPERSET_ADMIN_USERNAME --firstname $$SUPERSET_ADMIN_FIRSTNAME --lastname $$SUPERSET_ADMIN_LASTNAME --email $$SUPERSET_ADMIN_EMAIL --password $$SUPERSET_ADMIN_PASSWORD || true &&
+      superset init &&
+      superset run -h 0.0.0.0 -p 8088
+      "
+
+volumes:
+  airflow_postgres_data:
+  clickhouse_data:
+  superset_postgres_data:
+  superset_home:

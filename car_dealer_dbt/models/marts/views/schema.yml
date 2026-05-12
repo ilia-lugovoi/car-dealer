@@ -1,0 +1,64 @@
+version: 2
+
+models:
+  - name: v_sessions
+    description: "Итоговая BI-view по сессиям. Grain: 1 row = 1 session."
+    columns:
+      - name: id
+        description: "Идентификатор сессии."
+        tests: [not_null, unique]
+      - name: client_id
+        description: "Идентификатор клиента."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: medium
+        description: "Маркетинговый канал сессии."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('stg_mediums')
+                field: medium_name
+      - name: sale
+        description: "Флаг продажи в рамках сессии."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: crm_sale
+        description: "Флаг продажи по данным CRM."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: gross_profit_rub
+        description: "Валовая прибыль в рублях, подтянутая из продажи."
+      - name: ad_spend_share
+        description: "Доля рекламных расходов."
+
+  - name: v_clients
+    description: "Итоговая BI-view по клиентам. Grain: 1 row = 1 client_id."
+    columns:
+      - name: client_id
+        description: "Идентификатор клиента."
+        tests: [not_null, unique]
+      - name: sessions_cnt
+        description: "Количество сессий клиента."
+      - name: sales_cnt
+        description: "Количество продаж клиента."
+      - name: total_ad_cost
+        description: "Суммарные рекламные расходы по клиенту."
+      - name: total_gross_profit_rub
+        description: "Суммарная валовая прибыль по клиенту."
+
+  - name: v_medium
+    description: "Итоговая BI-view-справочник по каналам. Grain: 1 row = 1 medium."
+    columns:
+      - name: medium_name
+        description: "Название канала."
+        tests: [not_null, unique]
+      - name: medium_sort
+        description: "Порядок сортировки канала в BI."

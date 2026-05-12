@@ -1,0 +1,88 @@
+version: 2
+
+models:
+  - name: int_models_with_currency
+    description: "Промежуточная модель моделей автомобилей с кодом валюты. Grain: 1 row = 1 model."
+    columns:
+      - name: id
+        description: "Идентификатор модели."
+        tests: [not_null, unique]
+      - name: currency_id
+        description: "Ссылка на валюту модели."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_currencies')
+                field: id
+      - name: currency_code
+        description: "Буквенный код валюты модели."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['CNY', 'USD', 'EUR', 'RUB']
+
+  - name: int_session_crm
+    description: "Промежуточная модель сопоставления web-сессий и CRM-событий по client_id и дате. Grain: 1 row = 1 session."
+    columns:
+      - name: id
+        description: "Идентификатор сессии."
+        tests: [not_null, unique]
+      - name: client_id
+        description: "Клиент сессии."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: dealer_meet
+        description: "Флаг визита клиента к дилеру."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: crm_sale
+        description: "Флаг продажи по данным CRM."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+
+  - name: int_sales
+    description: "Промежуточная модель продаж с рублёвой ценой, валовой прибылью и долей рекламных расходов. Grain: 1 row = 1 sale."
+    columns:
+      - name: id
+        description: "Идентификатор продажи."
+        tests: [not_null, unique]
+      - name: client_id
+        description: "Клиент продажи."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: model_id
+        description: "Модель проданного автомобиля."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_models')
+                field: id
+      - name: session_id
+        description: "Сессия, которую удалось сопоставить продаже."
+      - name: currency_code
+        description: "Валюта исходной цены автомобиля."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['CNY', 'USD', 'EUR', 'RUB']
+      - name: price_rub
+        description: "Цена автомобиля в рублях на дату продажи."
+      - name: gross_profit_rub
+        description: "Валовая прибыль в рублях на дату продажи."
+      - name: ad_spend_share
+        description: "Доля рекламных расходов в цене продажи."

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+
+car_dealer_dbt/target/
+car_dealer_dbt/logs/
+car_dealer_dbt/.user.yml

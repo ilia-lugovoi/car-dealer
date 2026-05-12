@@ -1,0 +1,144 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: dbo
+    description: "Сырые таблицы, загруженные в MS SQL из Excel и обновляемые служебными скриптами проекта."
+    tables:
+      - name: clients
+        description: "Справочник клиентов. Grain: 1 row = 1 client_id."
+        columns:
+          - name: client_id
+            tests: [not_null, unique]
+          - name: client_name
+          - name: phone
+          - name: city
+      - name: crm_events
+        description: "CRM-события по клиентам и датам. Grain: 1 row = 1 client_id + event_date + event occurrence."
+        columns:
+          - name: client_id
+            tests: [not_null]
+          - name: crm_city
+          - name: count_cost
+          - name: dealer_meet
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+          - name: crm_sale
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+          - name: event_date
+            tests: [not_null]
+      - name: models
+        description: "Справочник моделей автомобилей. Grain: 1 row = 1 model."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: model_name
+            tests: [not_null]
+          - name: price_original
+          - name: margin_pct
+          - name: currency_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'currencies')
+                    field: id
+      - name: currencies
+        description: "Справочник валют. Grain: 1 row = 1 currency."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: currency_code
+            tests:
+              - not_null
+              - unique
+              - accepted_values:
+                  arguments:
+                    values: ['CNY', 'USD', 'EUR', 'RUB']
+      - name: mediums
+        description: "Справочник маркетинговых каналов. Grain: 1 row = 1 medium."
+        columns:
+          - name: medium_name
+            tests: [not_null, unique]
+          - name: medium_sort
+          - name: min_cost
+          - name: max_cost
+          - name: min_cost_sale
+          - name: max_cost_sale
+          - name: commentary
+      - name: sales
+        description: "Таблица продаж. Grain: 1 row = 1 sale."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: client_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'clients')
+                    field: client_id
+          - name: sale_date
+            tests: [not_null]
+          - name: sale_city
+          - name: model_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'models')
+                    field: id
+      - name: ga_sessions
+        description: "Таблица web-сессий из Google Analytics. Grain: 1 row = 1 session."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: client_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'clients')
+                    field: client_id
+          - name: conversion
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+          - name: sale
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+          - name: medium
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'mediums')
+                    field: medium_name
+          - name: model_ga_id
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'models')
+                    field: id
+      - name: currency_rates
+        description: "Курсы валют ЦБ РФ по датам. Grain: 1 row = 1 currency_code + rate_date."
+        columns:
+          - name: rate_date
+            tests: [not_null]
+          - name: currency_code
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'currencies')
+                    field: currency_code
+          - name: nominal
+          - name: rate_value
+          - name: update_timestamp
