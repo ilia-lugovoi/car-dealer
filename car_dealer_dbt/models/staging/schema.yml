@@ -2,12 +2,13 @@ version: 2
 
 models:
   - name: stg_clients
-    description: "Очищенный staging-слой клиентов. Grain: 1 row = 1 client_id."
+    description: "Clean staging layer for clients. Grain: 1 row = 1 client_id."
     columns:
       - name: client_id
         tests: [not_null, unique]
+
   - name: stg_crm_events
-    description: "Очищенный staging-слой CRM-событий. Grain: 1 row = 1 CRM event."
+    description: "Clean staging layer for CRM events. Grain: 1 row = 1 CRM event."
     columns:
       - name: client_id
         tests:
@@ -16,6 +17,13 @@ models:
               arguments:
                 to: ref('stg_clients')
                 field: client_id
+      - name: ga_session_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ga_sessions')
+                field: id
       - name: dealer_meet
         tests:
           - accepted_values:
@@ -26,8 +34,9 @@ models:
           - accepted_values:
               arguments:
                 values: [0, 1]
+
   - name: stg_currencies
-    description: "Очищенный staging-слой валют. Grain: 1 row = 1 currency."
+    description: "Clean staging layer for currencies. Grain: 1 row = 1 currency."
     columns:
       - name: id
         tests: [not_null, unique]
@@ -38,16 +47,47 @@ models:
           - accepted_values:
               arguments:
                 values: ['CNY', 'USD', 'EUR', 'RUB']
+
   - name: stg_mediums
-    description: "Очищенный staging-слой маркетинговых каналов. Grain: 1 row = 1 medium."
+    description: "Clean staging layer for mediums. Grain: 1 row = 1 medium."
     columns:
       - name: medium_name
         tests: [not_null, unique]
-  - name: stg_models
-    description: "Очищенный staging-слой моделей автомобилей. Grain: 1 row = 1 model."
+      - name: medium_group_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_medium_groups')
+                field: id
+
+  - name: stg_medium_groups
+    description: "Clean staging layer for medium groups. Grain: 1 row = 1 medium group."
     columns:
       - name: id
         tests: [not_null, unique]
+      - name: medium_group_name
+        tests: [not_null, unique]
+
+  - name: stg_models
+    description: "Clean staging layer for car models. Grain: 1 row = 1 model."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: brand_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_brands')
+                field: id
+      - name: class_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_classes')
+                field: id
       - name: currency_id
         tests:
           - not_null
@@ -55,8 +95,25 @@ models:
               arguments:
                 to: ref('stg_currencies')
                 field: id
+
+  - name: stg_brands
+    description: "Clean staging layer for car brands. Grain: 1 row = 1 brand."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: brand_name
+        tests: [not_null, unique]
+
+  - name: stg_classes
+    description: "Clean staging layer for car classes. Grain: 1 row = 1 class."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: class_name
+        tests: [not_null, unique]
+
   - name: stg_currency_rates
-    description: "Очищенный staging-слой курсов валют ЦБ. Grain: 1 row = 1 currency_code + rate_date."
+    description: "Clean staging layer for currency rates. Grain: 1 row = 1 currency_code + rate_date."
     columns:
       - name: rate_date
         tests: [not_null]
@@ -67,8 +124,9 @@ models:
               arguments:
                 to: ref('stg_currencies')
                 field: currency_code
+
   - name: stg_ga_sessions
-    description: "Очищенный staging-слой GA-сессий. Grain: 1 row = 1 session."
+    description: "Clean staging layer for GA sessions. Grain: 1 row = 1 session."
     columns:
       - name: id
         tests: [not_null, unique]
@@ -101,8 +159,9 @@ models:
               arguments:
                 to: ref('stg_models')
                 field: id
+
   - name: stg_sales
-    description: "Очищенный staging-слой продаж. Grain: 1 row = 1 sale."
+    description: "Clean staging layer for sales. Grain: 1 row = 1 sale."
     columns:
       - name: id
         tests: [not_null, unique]

@@ -2,13 +2,13 @@ version: 2
 
 models:
   - name: v_sessions
-    description: "Итоговая BI-view по сессиям. Grain: 1 row = 1 session."
+    description: "BI view by sessions. Grain: 1 row = 1 session."
     columns:
       - name: id
-        description: "Идентификатор сессии."
+        description: "Session identifier."
         tests: [not_null, unique]
       - name: client_id
-        description: "Идентификатор клиента."
+        description: "Client identifier."
         tests:
           - not_null
           - relationships:
@@ -16,49 +16,68 @@ models:
                 to: ref('stg_clients')
                 field: client_id
       - name: medium
-        description: "Маркетинговый канал сессии."
+        description: "Marketing medium."
         tests:
           - relationships:
               arguments:
                 to: ref('stg_mediums')
                 field: medium_name
+      - name: medium_group
+        description: "High-level medium group for BI analysis."
       - name: sale
-        description: "Флаг продажи в рамках сессии."
+        description: "Sale flag from the session layer."
         tests:
           - accepted_values:
               arguments:
                 values: [0, 1]
       - name: crm_sale
-        description: "Флаг продажи по данным CRM."
+        description: "Sale flag from CRM events."
         tests:
           - accepted_values:
               arguments:
                 values: [0, 1]
+      - name: brand_name
+        description: "Brand name from matched sale."
+      - name: class_name
+        description: "Class name from matched sale."
       - name: gross_profit_rub
-        description: "Валовая прибыль в рублях, подтянутая из продажи."
-      - name: ad_spend_share
-        description: "Доля рекламных расходов."
+        description: "Gross profit in RUB from matched sale."
+      - name: contribution_margin_rub
+        description: "Contribution margin in RUB from matched sale."
 
   - name: v_clients
-    description: "Итоговая BI-view по клиентам. Grain: 1 row = 1 client_id."
+    description: "BI view by clients. Grain: 1 row = 1 client_id."
     columns:
       - name: client_id
-        description: "Идентификатор клиента."
+        description: "Client identifier."
         tests: [not_null, unique]
       - name: sessions_cnt
-        description: "Количество сессий клиента."
+        description: "Number of sessions by client."
       - name: sales_cnt
-        description: "Количество продаж клиента."
+        description: "Number of sales by client."
       - name: total_ad_cost
-        description: "Суммарные рекламные расходы по клиенту."
+        description: "Total ad cost by client."
       - name: total_gross_profit_rub
-        description: "Суммарная валовая прибыль по клиенту."
+        description: "Total gross profit in RUB by client."
+      - name: total_contribution_margin_rub
+        description: "Total contribution margin in RUB by client."
 
   - name: v_medium
-    description: "Итоговая BI-view-справочник по каналам. Grain: 1 row = 1 medium."
+    description: "Medium lookup view. Grain: 1 row = 1 medium."
     columns:
       - name: medium_name
-        description: "Название канала."
+        description: "Medium name."
         tests: [not_null, unique]
+      - name: medium_group_id
+        description: "Reference to the medium group."
       - name: medium_sort
-        description: "Порядок сортировки канала в BI."
+        description: "Medium sort order for BI."
+
+  - name: v_medium_groups
+    description: "Medium groups lookup view. Grain: 1 row = 1 medium group."
+    columns:
+      - name: medium_group_name
+        description: "Medium group name."
+        tests: [not_null, unique]
+      - name: medium_group_sort
+        description: "Medium group sort order for BI."

@@ -1,5 +1,6 @@
 SELECT
     CAST(client_id as varchar(100)) as client_id,
+    CAST(ga_session_id as int) as ga_session_id,
     crm_city,
     CAST(count_cost as int) as count_cost,
     CAST(dealer_meet as int) as dealer_meet,

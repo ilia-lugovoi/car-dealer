@@ -1,63 +1,28 @@
 version: 2
 
 models:
-  - name: int_models_with_currency
-    description: "Промежуточная модель моделей автомобилей с кодом валюты. Grain: 1 row = 1 model."
+  - name: int_sales_ranked
+    description: "Sales with row_number inside client_id + sale_date. Grain: 1 row = 1 sale."
     columns:
       - name: id
-        description: "Идентификатор модели."
         tests: [not_null, unique]
-      - name: currency_id
-        description: "Ссылка на валюту модели."
-        tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_currencies')
-                field: id
-      - name: currency_code
-        description: "Буквенный код валюты модели."
-        tests:
-          - not_null
-          - accepted_values:
-              arguments:
-                values: ['CNY', 'USD', 'EUR', 'RUB']
+      - name: sale_rn
+        tests: [not_null]
 
-  - name: int_session_crm
-    description: "Промежуточная модель сопоставления web-сессий и CRM-событий по client_id и дате. Grain: 1 row = 1 session."
+  - name: int_ga_sales_ranked
+    description: "Sold GA sessions with row_number inside client_id + date. Grain: 1 row = 1 sold session."
+    columns:
+      - name: session_id
+        tests: [not_null, unique]
+      - name: sale_rn
+        tests: [not_null]
+
+  - name: int_sales_with_session
+    description: "Sales matched to web sessions. Grain: 1 row = 1 sale."
     columns:
       - name: id
-        description: "Идентификатор сессии."
         tests: [not_null, unique]
       - name: client_id
-        description: "Клиент сессии."
-        tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('stg_clients')
-                field: client_id
-      - name: dealer_meet
-        description: "Флаг визита клиента к дилеру."
-        tests:
-          - accepted_values:
-              arguments:
-                values: [0, 1]
-      - name: crm_sale
-        description: "Флаг продажи по данным CRM."
-        tests:
-          - accepted_values:
-              arguments:
-                values: [0, 1]
-
-  - name: int_sales
-    description: "Промежуточная модель продаж с рублёвой ценой, валовой прибылью и долей рекламных расходов. Grain: 1 row = 1 sale."
-    columns:
-      - name: id
-        description: "Идентификатор продажи."
-        tests: [not_null, unique]
-      - name: client_id
-        description: "Клиент продажи."
         tests:
           - not_null
           - relationships:
@@ -65,24 +30,105 @@ models:
                 to: ref('stg_clients')
                 field: client_id
       - name: model_id
-        description: "Модель проданного автомобиля."
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('stg_models')
                 field: id
-      - name: session_id
-        description: "Сессия, которую удалось сопоставить продаже."
+
+  - name: int_sales_enriched
+    description: "Sales enriched with model, currency and rate on sale date. Grain: 1 row = 1 sale."
+    columns:
+      - name: id
+        tests: [not_null, unique]
       - name: currency_code
-        description: "Валюта исходной цены автомобиля."
         tests:
           - accepted_values:
               arguments:
                 values: ['CNY', 'USD', 'EUR', 'RUB']
-      - name: price_rub
-        description: "Цена автомобиля в рублях на дату продажи."
-      - name: gross_profit_rub
-        description: "Валовая прибыль в рублях на дату продажи."
-      - name: ad_spend_share
-        description: "Доля рекламных расходов в цене продажи."
+
+  - name: int_sales
+    description: "Final sales intermediate layer with ad_cost, price_rub and gross_profit_rub. Grain: 1 row = 1 sale."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: client_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: model_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_models')
+                field: id
+      - name: currency_code
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['CNY', 'USD', 'EUR', 'RUB']
+
+  - name: int_models_with_currency
+    description: "Models enriched with brand and currency code. Grain: 1 row = 1 model."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: brand_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_brands')
+                field: id
+      - name: brand_name
+        tests: [not_null]
+      - name: class_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_classes')
+                field: id
+      - name: class_name
+        tests: [not_null]
+      - name: currency_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_currencies')
+                field: id
+      - name: currency_code
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['CNY', 'USD', 'EUR', 'RUB']
+
+  - name: int_session_crm
+    description: "Sessions enriched with CRM event fields by direct ga_session_id match. Grain: 1 row = 1 session."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: client_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: dealer_meet
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: crm_sale
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]

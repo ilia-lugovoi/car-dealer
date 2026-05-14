@@ -1,68 +1,44 @@
-with sales as (
+with calc_price_rub as (
     select
-        s.*,
-        row_number() over (
-            partition by s.client_id, s.sale_date
-            order by s.id
-        ) as sale_rn
-    from {{ ref('stg_sales') }} s
+        se.id,
+        se.client_id,
+        se.sale_date,
+        se.sale_city,
+        se.model_id,
+        se.session_id,
+        se.model_name,
+        se.brand_name,
+        se.class_name,
+        se.sales_medium,
+        se.price_original,
+        se.margin_pct,
+        se.currency_code,
+        se.ad_cost,
+        case
+            when se.currency_code = 'RUB' then se.price_original
+            else se.price_original * se.rate_value / nullif(se.nominal, 0)
+        end as price_rub
+    from {{ ref('int_sales_enriched') }} se
 ),
-ga_sales as (
+calc_gp_cm as (
     select
-        id as session_id,
-        client_id,
-        [date] as session_date,
-        ad_cost,
-        row_number() over (
-            partition by client_id, [date]
-            order by id
-        ) as sale_rn
-    from {{ ref('stg_ga_sessions') }}
-    where sale = 1
+        cpr.*,
+        cpr.price_rub * (1 - cpr.margin_pct) as gross_profit_rub,
+        (cpr.price_rub * (1 - cpr.margin_pct)) - cpr.ad_cost as contribution_margin_rub
+    from calc_price_rub cpr
 ),
-sales_with_session as (
+calc_ad_ref as (
     select
-        s.id,
-        s.client_id,
-        s.sale_date,
-        s.sale_city,
-        s.model_id,
-        gs.session_id,
-        gs.ad_cost
-    from sales s
-    left join ga_sales gs
-        on s.client_id = gs.client_id
-       and s.sale_date = gs.session_date
-       and s.sale_rn = gs.sale_rn
+        cgc.*,
+        case
+            when sales_medium = 'referral' THEN contribution_margin_rub * 0.05
+            ELSE 0
+        end as ad_cost_sale_referral 
+    from calc_gp_cm cgc
 )
+
 select
-    s.id,
-    s.client_id,
-    s.sale_date,
-    s.sale_city,
-    s.model_id,
-    s.session_id,
-    m.model_name,
-    m.price_original,
-    m.margin_pct,
-    m.currency_code,
-    s.ad_cost,
-    case
-        when m.currency_code = 'RUB' then m.price_original
-        else m.price_original * cr.rate_value / nullif(cr.nominal, 0)
-    end as price_rub,
-    case
-        when m.currency_code = 'RUB' then m.price_original * m.margin_pct
-        else (m.price_original * cr.rate_value / nullif(cr.nominal, 0)) * m.margin_pct
-    end as gross_profit_rub,
-    case
-        when m.currency_code = 'RUB' and m.price_original <> 0 then s.ad_cost / m.price_original
-        when m.currency_code <> 'RUB' and (m.price_original * cr.rate_value / nullif(cr.nominal, 0)) <> 0
-            then s.ad_cost / (m.price_original * cr.rate_value / nullif(cr.nominal, 0))
-    end as ad_spend_share
-from sales_with_session s
-left join {{ ref('int_models_with_currency') }} m
-    on s.model_id = m.id
-left join {{ ref('stg_currency_rates') }} cr
-    on m.currency_code = cr.currency_code
-   and s.sale_date = cr.rate_date
+    caf.*,
+    caf.ad_cost + caf.ad_cost_sale_referral as final_ad_cost,
+    caf.contribution_margin_rub - caf.ad_cost_sale_referral as final_contribution_margin_rub 
+from calc_ad_ref caf
