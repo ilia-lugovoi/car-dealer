@@ -5,8 +5,8 @@
 2) Создать дашборд анализа продаж и рекламы, чтобы оценить эффективность интернет-рекламы и найти точки роста
 
 ## Технологии
-1) Архитектура данных: MS SQL, Python (pandas, requests, pyodbc, openpyxl), Airflow, dbt, ClickHouse, Docker, Excel, Power Query
-2) BI-решения: Power BI (DAX) и Apache Superset (SQL Lab)
+**Архитектура данных:** MS SQL, Python (pandas, requests, pyodbc, openpyxl), Airflow, dbt, ClickHouse, Docker, Excel, Power Query
+**BI-решения:** Power BI (DAX) и Apache Superset (SQL Lab)
 
 ## Текущая архитектура
 Пайплайн в проекте сейчас выглядит так:
