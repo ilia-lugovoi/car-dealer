@@ -91,7 +91,8 @@ Power BI (DAX) и Apache Superset
 
 [http://localhost:8081](http://localhost:8081)
 
-<img width="1472" height="755" alt="list_dag_run" src="carDealer_screens/list_dag_run.png" />
+<img width="1439" height="524" alt="list_dag_run" src="carDealer_screens/list_dag_run.png" />
+
 
 ### Использование
 В проекте `Airflow` отвечает за:
