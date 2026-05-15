@@ -1,96 +1,64 @@
 # Сквозная аналитика автодилера
 
-## О проекте
-Проект моделирует сквозную аналитику автодилера от сырых данных до BI-витрин.
-
-**Цель проекта:**
-- собрать данные в MS SQL
-- оркестрировать ежедневное обновление курсов через Airflow
-- построить управляемый слой трансформаций через dbt
-- подготовить BI-витрины для Power BI и Superset
-- выгрузить итоговые витрины в ClickHouse
+## Цели проекта:
+1) Создать эффективную, управляемую, масштабируемую и безопасную архитектуру данных для автодилера (данные из Google Analyst, CRM, продаж и справочника)
+2) Создать дашборд анализа продаж и рекламы, чтобы оценить эффективность интернет-рекламы и найти точки роста
 
 ## Технологии
-- MS SQL Server
-- Python: `pyodbc`, `pandas`, `requests`, `openpyxl`
-- Apache Airflow
-- dbt (`dbt-sqlserver`)
-- Docker
-- ClickHouse
-- Power BI
-- Apache Superset
-- Excel, Power Query
+**Архитектура данных:** MS SQL, Python (pandas, requests, pyodbc, openpyxl), Airflow, dbt, ClickHouse, Docker, Excel, Power Query
 
-**Данные в проекте:**
-- Google Analytics сессии
-- CRM-события и продажи
-- Справочники автодилера
-- курсы валют ЦБ РФ
-(преобразовал сырые данные с курса `источник.xlsx` в `CarDealer.xlsx`)
+**BI-решения:** Power BI (DAX) и Apache Superset (SQL Lab)
 
 ## Текущая архитектура
 Пайплайн в проекте сейчас выглядит так:
 
-1. Подготовка данных в `CarDealer.xlsx`
-2. Скрипт [excel_to_db_csv.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/excel_to_db_csv.py)
-   - загружает таблицы в MS SQL
-   - параллельно сохраняет их в `csv`
-3. Скрипт [update_rates.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/update_rates.py)
-   - создаёт и обновляет `dbo.currency_rates`
-   - забирает исторические и ежедневные курсы ЦБ РФ
-4. Airflow DAG [auto_dealer_dag.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/airflow/dags/auto_dealer_dag.py)
-   - ежедневно обновляет курсы
-   - запускает `dbt build`
-5. dbt-проект [car_dealer_dbt](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/car_dealer_dbt)
-   - `staging` очищает источники
-   - `intermediate` считает бизнес-логику
-   - `marts/views` создаёт BI-view
-6. Итоговые витрины:
-   - `dbo.v_sessions`
-   - `dbo.v_clients`
-   - `dbo.v_medium`
-7. Эти витрины вручную выгружаются в ClickHouse
-8. ClickHouse используется как источник для Power BI и Superset
+1. Подготовка данных в Excel с помощью Power Query из `источник.xlsx` в `CarDealer.xlsx`
+
+   <img width="1461" height="732" alt="преобразование" src="https://github.com/user-attachments/assets/e6aa4a93-eac5-49ef-8738-1beb2f4e4e3d" />
+
+
+3. Перенос данных из Excel в MS SQL и сохранение в csv с помощью Python
+
+   [excel_to_db_csv.py](./scripts/excel_to_db_csv.py)
+
+
+4. Создаем таблицу currency_rates и выгружаем курсы валют с сайта ЦБ РФ за необходимый период
+
+   [backfill_currency_rates.py](./scripts/backfill_currency_rates.py)
+
+
+5. Запускаем dbt и автоматическое обновление курсов валют с сайта ЦБ с помощью Airflow
+
+   [auto_dealer_dag.py](./airflow/dags/auto_dealer_dag.py)
+
+
+6. Создаем слои с витринами в dbt
+
+   [car_dealer_dbt](./car_dealer_dbt)
+
+
+7. Подключаемся к ClickHouse, создаем таблицы и загружаем в них витрины
+
+   [load_clickhouse_views.py](./scripts/load_clickhouse_views.py)
+
 
 ## dbt-слои
 ### `staging`
 Grain и структура источников приводятся к удобному виду:
-- `stg_ga_sessions`
-- `stg_sales`
-- `stg_models`
-- `stg_currencies`
-- `stg_currency_rates`
-- `stg_clients`
-- `stg_crm_events`
-- `stg_mediums`
 
 ### `intermediate`
 Промежуточная бизнес-логика:
-- `int_models_with_currency`
-- `int_session_crm`
-- `int_sales`
 
 В этом слое считаются:
-- `price_rub`
-- `gross_profit_rub`
-- `ad_spend_share`
 
 ### `views`
 Итоговые витрины для BI:
-- `v_sessions`
-  - grain: `1 row = 1 session`
-- `v_clients`
-  - grain: `1 row = 1 client_id`
-- `v_medium`
-  - grain: `1 row = 1 medium`
 
 ## Airflow
 Airflow запущен в Docker и доступен по адресу:
-- [http://localhost:8081](http://localhost:8081)
+[http://localhost:8081](http://localhost:8081)
 
 Используется для:
-- ежедневной загрузки свежих курсов валют
-- запуска `dbt build`
 
 ## ClickHouse
 ClickHouse запущен как отдельный сервис проекта в Docker.
@@ -105,66 +73,27 @@ ClickHouse запущен как отдельный сервис проекта 
 - user: `analytics`
 - password: `analytics`
 
-DDL-скрипты для ClickHouse лежат в:
-- [sql/clickhouse](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/sql/clickhouse)
+DDL-скрипты для ClickHouse лежат в папке:
+[sql/clickhouse](./sql/clickhouse)
 
-### Что важно при ручной загрузке CSV в ClickHouse
-- сначала создаётся структура таблицы
-- потом в неё загружаются данные
-- для `SSMS`-CSV с `NULL` нужно использовать:
-  - `--format_csv_null_representation='NULL'`
-- для широкой витрины `v_sessions` лучше использовать `;` как разделитель
-- при повторной полной загрузке таблицу лучше очищать через `TRUNCATE TABLE`
+### Собранные пометки, используемые в скриптах:
+1. Для `SSMS`-CSV с `NULL` нужно использовать:
+   `--format_csv_null_representation='NULL'`
+2. Для широкой витрины `v_sessions` нужно использовать `;` как разделитель
+3. При повторной полной загрузке таблицу лучше очищать через `TRUNCATE TABLE`
 
 ## BI
 ### Power BI
-Power BI подключается к ClickHouse и использует:
-- `v_sessions`
-- `v_clients`
-- `v_medium`
 
-<!-- Добавить скрин подключения Power BI к ClickHouse -->
-<!-- Добавить новый скрин модели данных Power BI -->
-<!-- Добавить новые скрины визуализаций Power BI -->
 
 ### Superset
-Superset запущен как отдельный сервис проекта в Docker и доступен по адресу:
-- [http://localhost:8089/login/](http://localhost:8089/login/)
+Superset доступен по адресу:
 
 Используется для подключения к ClickHouse и построения альтернативных BI-визуализаций.
 
-<!-- Добавить скрин подключения Superset к ClickHouse -->
-<!-- Добавить скрин datasets в Superset -->
-<!-- Добавить новые скрины дашборда Superset -->
 
 ## Docker-сервисы проекта
 Текущий `docker-compose` поднимает:
-- Airflow
-- служебный Postgres для Airflow
-- ClickHouse
-- Superset
-- служебный Postgres для Superset
 
 ## Как запустить проект
-Из папки [car-dealer](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer):
 
-```powershell
-docker compose up -d --build
-```
-
-После этого:
-- Airflow: [http://localhost:8081](http://localhost:8081)
-- Superset: [http://localhost:8089/login/](http://localhost:8089/login/)
-
-## Что в проекте уже автоматизировано
-- загрузка raw-данных из Excel в MS SQL
-- выгрузка raw-таблиц в CSV
-- создание и ежедневное обновление `currency_rates`
-- трансформации и тесты в dbt
-
-## Что сейчас делается вручную
-- выгрузка `dbo.v_sessions`, `dbo.v_clients`, `dbo.v_medium` из MS SQL в CSV
-- загрузка этих CSV в ClickHouse
-- подключение ClickHouse к BI-инструментам
-
-Это оставлено вручную специально как учебный этап, чтобы понять работу ClickHouse с нуля.
