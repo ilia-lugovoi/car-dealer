@@ -1,56 +1,40 @@
 # Сквозная аналитика автодилера
 
-## О проекте
-Проект моделирует сквозную аналитику автодилера от сырых данных до BI-витрин.
-
-**Цель проекта:**
-- собрать данные в MS SQL
-- оркестрировать ежедневное обновление курсов через Airflow
-- построить управляемый слой трансформаций через dbt
-- подготовить BI-витрины для Power BI и Superset
-- выгрузить итоговые витрины в ClickHouse
+## Цели проекта:
+1) Создать эффективную, управляемую, масштабируемую и безопасную архитектуру данных для автодилера (данные из Google Analyst, CRM, продаж и справочника)
+2) Создать дашборд анализа продаж и рекламы, чтобы оценить эффективность интернет-рекламы и найти точки роста
 
 ## Технологии
-- MS SQL Server
-- Python: `pyodbc`, `pandas`, `requests`, `openpyxl`
-- Apache Airflow
-- dbt (`dbt-sqlserver`)
-- Docker
-- ClickHouse
-- Power BI
-- Apache Superset
-- Excel, Power Query
-
-**Данные в проекте:**
-- Google Analytics сессии
-- CRM-события и продажи
-- Справочники автодилера
-- курсы валют ЦБ РФ
-(преобразовал сырые данные с курса `источник.xlsx` в `CarDealer.xlsx`)
+1) Архитектура данных: MS SQL, Python (pandas, requests, pyodbc, openpyxl), Airflow, dbt, ClickHouse, Docker, Excel, Power Query
+2) BI-решения: Power BI (DAX) и Apache Superset (SQL Lab)
 
 ## Текущая архитектура
 Пайплайн в проекте сейчас выглядит так:
 
-1. Подготовка данных в `CarDealer.xlsx`
-2. Скрипт [excel_to_db_csv.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/excel_to_db_csv.py)
-   - загружает таблицы в MS SQL
-   - параллельно сохраняет их в `csv`
-3. Скрипт [update_rates.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/update_rates.py)
+1. Подготовка данных в Excel с помощью Power Query `источник.xlsx` в `CarDealer.xlsx`
+
+<img width="1461" height="732" alt="преобразование" src="https://github.com/user-attachments/assets/e6aa4a93-eac5-49ef-8738-1beb2f4e4e3d" />
+
+2. Перенос данных из Excel в MS SQL и сохранение в csv с помощью Python
+
+
+
+4. Скрипт [update_rates.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/update_rates.py)
    - создаёт и обновляет `dbo.currency_rates`
    - забирает исторические и ежедневные курсы ЦБ РФ
-4. Airflow DAG [auto_dealer_dag.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/airflow/dags/auto_dealer_dag.py)
+5. Airflow DAG [auto_dealer_dag.py](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/airflow/dags/auto_dealer_dag.py)
    - ежедневно обновляет курсы
    - запускает `dbt build`
-5. dbt-проект [car_dealer_dbt](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/car_dealer_dbt)
+6. dbt-проект [car_dealer_dbt](/C:/Users/ilyal/Documents/Доки/Кейсы/CarDealer/car-dealer/car_dealer_dbt)
    - `staging` очищает источники
    - `intermediate` считает бизнес-логику
    - `marts/views` создаёт BI-view
-6. Итоговые витрины:
+7. Итоговые витрины:
    - `dbo.v_sessions`
    - `dbo.v_clients`
    - `dbo.v_medium`
-7. Эти витрины вручную выгружаются в ClickHouse
-8. ClickHouse используется как источник для Power BI и Superset
+8. Эти витрины вручную выгружаются в ClickHouse
+9. ClickHouse используется как источник для Power BI и Superset
 
 ## dbt-слои
 ### `staging`
