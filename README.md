@@ -91,10 +91,6 @@ Power BI (DAX) и Apache Superset
 
 [http://localhost:8081](http://localhost:8081)
 
-Удобный скрипт на смену пароля:
-
-docker exec airflow_autodealer airflow users reset-password --username admin --password admin
-
 ### Использование
 В проекте `Airflow` отвечает за:
 - ежедневную догрузку актуальных курсов валют с сайта ЦБ РФ;
@@ -135,6 +131,8 @@ DDL-скрипты для таблиц `ClickHouse` лежат в папке:
 - эффективность этапов воронки продаж;
 - таблица эффективности кампаний и ключевых слов.
 
+Дашборд фокусируется на продажах, маржинальной прибыли, `ДРР` и эффективности каналов привлечения.
+
 <img width="1241" height="697" alt="full_screen" src="carDealer_screens/PBI_charts/full_screen.png" />
 
 <img width="1299" height="773" alt="интерактивность" src="carDealer_screens/PBI_charts/интерактивность.png" />
@@ -151,14 +149,12 @@ DDL-скрипты для таблиц `ClickHouse` лежат в папке:
 
 [http://localhost:8089/login/](http://localhost:8089/login/)
 
-#### Доступы
-- login: `admin`
-- password: `P2NVw8PhcsyBdyuDuYGSM_3N_DHD_bdhM5szpe1m`
-
 Используется для:
 - подключения к `ClickHouse`;
 - построения альтернативного BI-дашборда;
 - анализа городов, моделей, групп просмотров страниц и маржинальной прибыли.
+
+В `Superset` собран альтернативный аналитический дашборд с акцентом на исследовательские срезы по городам, моделям и поведенческим группам клиентов.
 
 <img width="1865" height="825" alt="fullscreenSS" src="carDealer_screens/superset_charts/fullscreenSS.png" />
 
@@ -169,6 +165,13 @@ DDL-скрипты для таблиц `ClickHouse` лежат в папке:
 <img width="701" height="541" alt="v_clients_dashbord" src="carDealer_screens/superset_charts/v_clients_dashbord.png" />
 
 <img width="595" height="459" alt="v_sessions_for_clients" src="carDealer_screens/superset_charts/v_sessions_for_clients.png" />
+
+## Результаты проекта
+- собрана end-to-end архитектура: `Excel -> MS SQL -> dbt -> ClickHouse -> Power BI / Superset`;
+- рассчитаны продажи, валовая и маржинальная прибыль, рекламные расходы и `ДРР`;
+- выделены 3 группы трафика: `органика`, `рефералы`, `доп. привлечение`;
+- построены витрины и дашборды для двух BI-инструментов;
+- найдены точки для оптимизации рекламных кампаний и оценки потенциала масштабирования каналов привлечения.
 
 
 ## Docker-сервисы проекта
@@ -187,6 +190,8 @@ DDL-скрипты для таблиц `ClickHouse` лежат в папке:
 ```powershell
 docker compose up -d --build
 ```
+
+Перед запуском убедитесь, что локальный `MS SQL Server` доступен по параметрам, указанным в `docker-compose.yaml`.
 
 ### 2. Загрузить raw-данные из Excel в MS SQL
 ```powershell
