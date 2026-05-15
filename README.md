@@ -6,9 +6,11 @@
 
 ## Технологии
 **Архитектура данных:**
+
 MS SQL, Python (pandas, requests, pyodbc, openpyxl), Airflow, dbt, ClickHouse, Docker, Excel, Power Query
 
 **BI-решения:**
+
 Power BI (DAX) и Apache Superset (SQL Lab)
 
 ## Текущая архитектура
