@@ -12,8 +12,7 @@ MS SQL, Python (pandas, requests, pyodbc, openpyxl), Airflow, dbt, ClickHouse, D
 ### BI-решения:
 Power BI (DAX) и Apache Superset (SQL Lab)
 
-## Текущая архитектура
-Пайплайн в проекте сейчас выглядит так:
+## Пайплайн проекта
 
 1. Подготовка данных в Excel с помощью Power Query из `источник.xlsx` в `CarDealer.xlsx`
 
