@@ -19,23 +19,28 @@
 
 3. Перенос данных из Excel в MS SQL и сохранение в csv с помощью Python
 
-    [excel_to_db_csv.py](./scripts/excel_to_db_csv.py)
+   [excel_to_db_csv.py](./scripts/excel_to_db_csv.py)
+
 
 4. Создаем таблицу currency_rates и выгружаем курсы валют с сайта ЦБ РФ за необходимый период
 
-[backfill_currency_rates.py](./scripts/backfill_currency_rates.py)
+   [backfill_currency_rates.py](./scripts/backfill_currency_rates.py)
 
-4. Запускаем dbt и автоматическое обновление курсов валют с сайта ЦБ с помощью Airflow
 
-[auto_dealer_dag.py](./airflow/dags/auto_dealer_dag.py)
+5. Запускаем dbt и автоматическое обновление курсов валют с сайта ЦБ с помощью Airflow
 
-5. Создаем слои с витринами в dbt
+   [auto_dealer_dag.py](./airflow/dags/auto_dealer_dag.py)
 
-[car_dealer_dbt](./car_dealer_dbt)
 
-6. Подключаемся к ClickHouse, создаем таблицы и загружаем в них витрины
+6. Создаем слои с витринами в dbt
 
-[load_clickhouse_views.py](./scripts/load_clickhouse_views.py)
+   [car_dealer_dbt](./car_dealer_dbt)
+
+
+7. Подключаемся к ClickHouse, создаем таблицы и загружаем в них витрины
+
+   [load_clickhouse_views.py](./scripts/load_clickhouse_views.py)
+
 
 ## dbt-слои
 ### `staging`
