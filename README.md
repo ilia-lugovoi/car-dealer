@@ -7,10 +7,10 @@
 ## Технологии
 
 ### Архитектура данных
-`MS SQL`, `Python` (`pandas`, `requests`, `pyodbc`, `openpyxl`), `Airflow`, `dbt`, `ClickHouse`, `Docker`, `Excel`, `Power Query`
+MS SQL, Python (pandas, requests, pyodbc, openpyxl), Airflow, dbt, ClickHouse, Docker, Excel, Power Query
 
 ### BI-решения
-`Power BI` (`DAX`) и `Apache Superset`
+Power BI (DAX) и Apache Superset
 
 ## Пайплайн проекта
 1. Подготовка данных в Excel с помощью Power Query: из `источник.xlsx` в `CarDealer.xlsx`.
@@ -91,14 +91,14 @@
 
 [http://localhost:8081](http://localhost:8081)
 
-### Доступы
-- login: `admin`
-- password: `P2NVw8PhcsyBdyuDuYGSM_3N_DHD_bdhM5szpe1m`
+Удобный скрипт на смену пароля:
+
+docker exec airflow_autodealer airflow users reset-password --username admin --password admin
 
 ### Использование
 В проекте `Airflow` отвечает за:
 - ежедневную догрузку актуальных курсов валют с сайта ЦБ РФ;
-- запуск `dbt build` после обновления курсов.
+- запуск `dbt build`.
 
 ## ClickHouse
 `ClickHouse` поднят как отдельный сервис проекта в `Docker`.
@@ -135,6 +135,17 @@ DDL-скрипты для таблиц `ClickHouse` лежат в папке:
 - эффективность этапов воронки продаж;
 - таблица эффективности кампаний и ключевых слов.
 
+<img width="1241" height="697" alt="full_screen" src="carDealer_screens/PBI_charts/full_screen.png" />
+
+<img width="1299" height="773" alt="интерактивность" src="carDealer_screens/PBI_charts/интерактивность.png" />
+
+<img width="1234" height="682" alt="модель_данныхPBI" src="carDealer_screens/PBI_charts/модель_данныхPBI.png" />
+
+<img width="1154" height="684" alt="справка_дашборд_PBI" src="carDealer_screens/PBI_charts/справка_дашборд_PBI.png" />
+
+<img width="1151" height="733" alt="справка_метрики_PBI" src="carDealer_screens/PBI_charts/справка_метрики_PBI.png" />
+
+
 ### Superset
 `Superset` доступен по адресу:
 
@@ -148,6 +159,17 @@ DDL-скрипты для таблиц `ClickHouse` лежат в папке:
 - подключения к `ClickHouse`;
 - построения альтернативного BI-дашборда;
 - анализа городов, моделей, групп просмотров страниц и маржинальной прибыли.
+
+<img width="1865" height="825" alt="fullscreenSS" src="carDealer_screens/superset_charts/fullscreenSS.png" />
+
+<img width="1868" height="827" alt="fullscreenSS_filter" src="carDealer_screens/superset_charts/fullscreenSS_filter.png" />
+
+<img width="1102" height="660" alt="df_list" src="carDealer_screens/superset_charts/df_list.png" />
+
+<img width="701" height="541" alt="v_clients_dashbord" src="carDealer_screens/superset_charts/v_clients_dashbord.png" />
+
+<img width="595" height="459" alt="v_sessions_for_clients" src="carDealer_screens/superset_charts/v_sessions_for_clients.png" />
+
 
 ## Docker-сервисы проекта
 Текущий `docker-compose` поднимает:
@@ -190,18 +212,3 @@ python scripts/load_clickhouse_views.py
 - `Airflow`: [http://localhost:8081](http://localhost:8081)
 - `ClickHouse HTTP`: [http://localhost:8124](http://localhost:8124)
 - `Superset`: [http://localhost:8089/login/](http://localhost:8089/login/)
-
-## Структура проекта
-```text
-car-dealer/
-├── airflow/
-├── car_dealer_dbt/
-├── raw_data/
-├── scripts/
-├── sql/
-│   └── clickhouse/
-├── superset/
-├── docker-compose.yaml
-├── Dockerfile
-└── README.md
-```
