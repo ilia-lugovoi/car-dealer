@@ -13,12 +13,10 @@
 Пайплайн в проекте сейчас выглядит так:
 
 1. Подготовка данных в Excel с помощью Power Query из `источник.xlsx` в `CarDealer.xlsx`
-
-<img width="1461" height="732" alt="преобразование" src="https://github.com/user-attachments/assets/e6aa4a93-eac5-49ef-8738-1beb2f4e4e3d" />
+   <img width="1461" height="732" alt="преобразование" src="https://github.com/user-attachments/assets/e6aa4a93-eac5-49ef-8738-1beb2f4e4e3d" />
 
 2. Перенос данных из Excel в MS SQL и сохранение в csv с помощью Python
-
-[excel_to_db_csv.py](./scripts/excel_to_db_csv.py)
+   [excel_to_db_csv.py](./scripts/excel_to_db_csv.py)
 
 3. Создаем таблицу currency_rates и выгружаем курсы валют с сайта ЦБ РФ за необходимый период
 
