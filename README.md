@@ -93,7 +93,6 @@ Power BI (DAX) и Apache Superset
 
 <img width="1472" height="755" alt="list_dag_run" src="carDealer_screens/list_dag_run.png" />
 
-
 ### Использование
 В проекте `Airflow` отвечает за:
 - ежедневную догрузку актуальных курсов валют с сайта ЦБ РФ;
