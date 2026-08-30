@@ -1,4 +1,4 @@
-# End-to-End Analytics for Auto Dealerships
+# Analytics for Auto Dealerships
 
 ## Цели проекта
 1. Создать эффективную и управляемую архитектуру данных для автодилера на основе данных из GA-сессий, CRM, продаж и справочников.
