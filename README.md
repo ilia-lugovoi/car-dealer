@@ -32,35 +32,21 @@ BI-решение для анализа продаж и эффективност
 ## Архитектура
 
 ```text
-                Исходные данные
-             CSV / Excel / CRM / GA
-                       │
-                       ▼
-                Python ingestion
-             Extract → Transform → Load
-                       │
-                       ▼
-                  PostgreSQL
-                       │
-                 ┌─────┴─────┐
-                 │    raw    │
-                 └─────┬─────┘
-                       │
-                       ▼
-                      dbt
-                       │
-              ┌────────┴────────┐
-              ▼                 ▼
-          staging              marts
-              │                 │
-              └────────┬────────┘
-                       ▼
-                Power BI
-                 semantic model
-                       │
-              ┌────────┴────────┐
-              ▼                 ▼
-          Продажи          Интернет-реклама
+            [ Исходные данные ]
+   Google Analytics → CRM + Справочники
+               ↓     ↓    ↓
+       [ Extract → Transform → Load ]
+  Python ingestion + Курсы валют c API (Airflow)
+                     ↓
+                  [ raw ]
+                 PostgreSQL
+                     ↓
+            [ staging & marts ]
+              dbt (PostgreSQL)
+                     ↓
+          [ Power BI semantic model ]
+               ↓          ↓
+           Продажи   Интернет-реклама
 ```
 
 ClickHouse и Apache Superset рассматриваются как дополнительный
@@ -147,7 +133,7 @@ PostgreSQL
     └── currency_rates
 ```
 
-### dbt
+#### dbt
 dbt используется для аналитического преобразования данных.
 
 #### Staging
@@ -195,7 +181,7 @@ stg_currency_rates
 - модель;
 - класс автомобиля.
 
-Grain:
+**Grain:**
 ```text
 1 строка = 1 продажа
 ```
@@ -228,6 +214,11 @@ Grain:
 - model;
 - class.
 
+**Grain:**
+```text
+1 строка = 1 сессия из GA
+```
+
 ### Курсы валют
 Для расчёта стоимости автомобилей в рублях используются
 официальные курсы Центрального банка РФ.
@@ -252,7 +243,7 @@ python scripts/backfill_currency_rates.py
 
 Актуальный курс обновляется ежедневно через Airflow.
 
-#### Airflow
+### Airflow
 Airflow используется для автоматизации регулярного обновления данных.
 
 Текущий DAG:
@@ -272,6 +263,8 @@ Airflow запускается в Docker.
 ```text
 http://localhost:8081
 ```
+
+---
 
 ## Power BI
 
@@ -342,6 +335,8 @@ Sales
 - model;
 - pageviews.
 
+---
+
 ## Результат
 
 В результате проекта построен end-to-end pipeline:
@@ -369,6 +364,8 @@ Power BI
 - воронку продаж;
 - эффективность рекламных каналов.
 
+---
+
 ## Особенности исходных данных
 
 Исходный набор данных является тестовым и содержит
@@ -388,6 +385,8 @@ Power BI
 
 Поэтому проект демонстрирует не только построение BI,
 но и работу с неполными и неоднородными исходными данными.
+
+---
 
 ## Запуск проекта
 
@@ -440,6 +439,8 @@ docker exec airflow_autodealer \
 http://localhost:8081
 ```
 
+---
+
 ## Что планируется развивать
-ClickHouse как аналитический serving layer;
-Apache Superset.
+1. ClickHouse как аналитический serving layer;
+2. Apache Superset.
