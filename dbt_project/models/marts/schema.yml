@@ -1,0 +1,6 @@
+version: 2
+
+models:
+  - name: mart_sales
+    description: >
+      Аналитическая витрина по продажам.

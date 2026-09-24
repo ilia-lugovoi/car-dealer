@@ -1,0 +1,16 @@
+
+name: 'dbt_project'
+
+version: '1.0.0'
+
+profile: car_dealer
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+
+models:
+  dbt_project:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

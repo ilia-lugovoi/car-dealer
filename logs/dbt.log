@@ -1,31 +1,30 @@
-[0m12:56:08.502038 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e470e850>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e21135d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e1c50f50>]}
+[0m10:45:32.899857 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001CBC206C830>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001CBC5A009E0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001CBC2C3D460>]}
 
 
-============================== 12:56:08.509171 | 51859bb7-cd59-4a06-8322-d3469b3128fb ==============================
-[0m12:56:08.509171 [info ] [MainThread]: Running with dbt=1.11.9
-[0m12:56:08.510539 [debug] [MainThread]: running dbt with arguments {'introspect': 'True', 'printer_width': '80', 'invocation_command': 'dbt init car_dealer_dbt', 'no_print': 'None', 'fail_fast': 'False', 'write_json': 'True', 'indirect_selection': 'eager', 'cache_selected_only': 'False', 'log_path': 'logs', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'empty': 'None', 'version_check': 'True', 'static_parser': 'True', 'log_cache_events': 'False', 'use_experimental_parser': 'False', 'profiles_dir': '/home/airflow/.dbt', 'warn_error': 'None', 'use_colors': 'True', 'send_anonymous_usage_stats': 'True', 'partial_parse': 'True', 'log_format': 'default', 'debug': 'False', 'quiet': 'False'}
-[0m12:56:08.524598 [info ] [MainThread]: Creating dbt configuration folder at /home/airflow/.dbt
-[0m12:56:08.531437 [debug] [MainThread]: Starter project path: /home/airflow/.local/lib/python3.11/site-packages/dbt/include/starter_project
-[0m12:56:08.673898 [info ] [MainThread]: 
-Your new dbt project "car_dealer_dbt" was created!
+============================== 10:45:32.904721 | 224e95be-74d7-4c39-a289-86162b90e75a ==============================
+[0m10:45:32.904721 [info ] [MainThread]: Running with dbt=1.12.0
+[0m10:45:32.905727 [debug] [MainThread]: running dbt with arguments {'version_check': 'True', 'no_print': 'None', 'static_parser': 'True', 'target_path': 'None', 'maximum_seed_size_mib': '1', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'printer_width': '80', 'write_json': 'True', 'introspect': 'True', 'log_cache_events': 'False', 'empty': 'False', 'cache_selected_only': 'False', 'log_format': 'default', 'debug': 'False', 'fail_fast': 'False', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'profiles_dir': 'C:\\Users\\ilyal\\.dbt', 'indirect_selection': 'eager', 'hints_enabled': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'invocation_command': 'dbt build --select v_sessions', 'log_path': 'logs'}
+[0m10:45:32.905727 [error] [MainThread]: [[31mERROR[0m]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path C:\Users\ilyal\Documents\Dosc\projects\car-dealer\dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m10:45:32.906725 [debug] [MainThread]: Command `dbt build` failed at 10:45:32.906725 after 0.15 seconds
+[0m10:45:32.907729 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001CBC746AFC0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001CBC7426F90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001CBC74269C0>]}
+[0m10:45:32.907729 [debug] [MainThread]: Flushing usage events
+[0m10:45:34.115581 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m11:12:02.443941 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000022BF4AA2870>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000022BF4AC8C80>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000022BF4ACBFE0>]}
 
-For more information on how to configure the profiles.yml file,
-please consult the dbt documentation here:
 
-  https://docs.getdbt.com/docs/configure-your-profile
-
-One more thing:
-
-Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
-
-  https://community.getdbt.com/
-
-Happy modeling!
-
-[0m12:56:08.674994 [info ] [MainThread]: Setting up your profile.
-[0m13:00:34.317243 [info ] [MainThread]: Profile car_dealer_dbt written to /home/airflow/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
-[0m13:00:34.321262 [debug] [MainThread]: Resource report: {"command_name": "init", "command_success": true, "command_wall_clock_time": 265.88043, "process_in_blocks": "0", "process_kernel_time": 0.654377, "process_mem_max_rss": "127652", "process_out_blocks": "8", "process_user_time": 1.714227}
-[0m13:00:34.323811 [debug] [MainThread]: Command `dbt init` succeeded at 13:00:34.323613 after 265.88 seconds
-[0m13:00:34.325391 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e1c52e10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e32351d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ca0e6554110>]}
-[0m13:00:34.326609 [debug] [MainThread]: Flushing usage events
-[0m13:00:35.787448 [debug] [MainThread]: An error was encountered while trying to flush usage events
+============================== 11:12:02.448139 | 6254c4a5-3366-484a-975d-7fdc0a7f7aa7 ==============================
+[0m11:12:02.448139 [info ] [MainThread]: Running with dbt=1.12.0
+[0m11:12:02.448656 [debug] [MainThread]: running dbt with arguments {'static_parser': 'True', 'no_print': 'None', 'version_check': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'maximum_seed_size_mib': '1', 'printer_width': '80', 'write_json': 'True', 'empty': 'False', 'log_cache_events': 'False', 'introspect': 'True', 'cache_selected_only': 'False', 'fail_fast': 'False', 'debug': 'False', 'log_format': 'default', 'profiles_dir': 'C:\\Users\\ilyal\\.dbt', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'partial_parse': 'True', 'indirect_selection': 'eager', 'hints_enabled': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'invocation_command': 'dbt build --select int_session_crm', 'log_path': 'logs'}
+[0m11:12:02.449179 [error] [MainThread]: [[31mERROR[0m]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path C:\Users\ilyal\Documents\Dosc\projects\car-dealer\dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m11:12:02.450218 [debug] [MainThread]: Command `dbt build` failed at 11:12:02.450218 after 0.13 seconds
+[0m11:12:02.450743 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000022BF2712330>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000022BF3FFF320>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000022BF67A7110>]}
+[0m11:12:02.450743 [debug] [MainThread]: Flushing usage events
+[0m11:12:03.665885 [debug] [MainThread]: An error was encountered while trying to flush usage events

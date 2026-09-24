@@ -1,0 +1,157 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: "Raw data loaded from folder 'data' by the ingestion pipeline."
+
+    tables:
+
+      - name: crm_events
+        description: "CRM events and sales-related events."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: client_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'clients')
+                    field: id
+          - name: count_cost
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+          - name: dealer_meet
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+          - name: crm_sale
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+
+      - name: ga_sessions
+        description: "Google Analytics sessions."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: client_id
+            tests: [not_null]
+          - name: medium
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'mediums')
+                    field: medium_name
+          - name: conversion
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+
+      - name: clients
+        description: "Client reference data."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+
+      - name: models
+        description: "Car model reference data."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: name
+            tests: [not_null]
+          - name: brand_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'brands')
+                    field: id
+          - name: class_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'classes')
+                    field: id
+
+      - name: brands
+        description: "Car brand reference data."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: brand_name
+            tests: [not_null, unique]
+
+      - name: classes
+        description: "Car class reference data."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: class_name
+            tests: [not_null, unique]
+
+      - name: mediums
+        description: "Traffic medium reference data."
+        columns:
+          - name: medium_name
+            tests: [not_null, unique]
+          - name: medium_group_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'medium_groups')
+                    field: id
+          - name: medium_sort
+            tests: [not_null]
+
+      - name: medium_groups
+        description: "Traffic medium groups reference data."
+        columns:
+          - name: id
+            tests: [not_null, unique]
+          - name: medium_group_name
+            tests: [not_null, unique]
+          - name: medium_group_sort
+            tests: [not_null]
+
+      - name: currency_rates
+        description: "CBR currency rates by date. Grain: 1 row = 1 currency_code + rate_date."
+        columns:
+          - name: rate_date
+            tests: [not_null]
+          - name: currency_code
+            tests: [not_null]
+          - name: nominal
+            tests: [not_null]
+          - name: rate_value
+            tests: [not_null]
+          - name: update_timestamp
+            tests: [not_null]
+      
+      - name: prices
+        description: "Car model prices. Grain: 1 row = 1 model + effective_date."
+        columns:
+          - name: model_id
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'models')
+                    field: id
+          - name: effective_date
+            tests: [not_null]
+          - name: price_original
+            tests: [not_null]
+          - name: margin_pct
+            tests: [not_null]
+          - name: currency_code
+            tests: [not_null]

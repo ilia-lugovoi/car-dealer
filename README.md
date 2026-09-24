@@ -1,219 +1,445 @@
 # Analytics for Auto Dealerships
 
+BI-решение для анализа продаж и эффективности интернет-рекламы автодилера.
+
+Проект построен как end-to-end аналитический pipeline:
+от загрузки исходных данных и контроля качества до формирования
+аналитических витрин и интерактивных Power BI-отчётов.
+
+> **Данные:** обезличированный тестовый набор данных.
+
+---
+
 ## Цели проекта
-1. Создать эффективную и управляемую архитектуру данных для автодилера на основе данных из GA-сессий, CRM, продаж и справочников.
-2. Собрать BI-дашборды для анализа продаж и интернет-рекламы, чтобы оценивать эффективность каналов и находить точки роста.
+
+Проект решает две основные аналитические задачи:
+
+1. **Анализ продаж**
+   - сколько автомобилей продано;
+   - на какую сумму;
+   - какая маржинальная прибыль;
+   - как меняются продажи по городам и моделям.
+
+2. **Анализ эффективности интернет-рекламы**
+   - откуда приходит трафик;
+   - какие каналы приводят к продажам;
+   - как проходит пользовательская воронка;
+   - сколько стоит привлечение;
+   - сколько маржинальной прибыли приносит 1 ₽ рекламных расходов.
+
+---
+
+## Архитектура
+
+```text
+                Исходные данные
+             CSV / Excel / CRM / GA
+                       │
+                       ▼
+                Python ingestion
+             Extract → Transform → Load
+                       │
+                       ▼
+                  PostgreSQL
+                       │
+                 ┌─────┴─────┐
+                 │    raw    │
+                 └─────┬─────┘
+                       │
+                       ▼
+                      dbt
+                       │
+              ┌────────┴────────┐
+              ▼                 ▼
+          staging              marts
+              │                 │
+              └────────┬────────┘
+                       ▼
+                Power BI
+                 semantic model
+                       │
+              ┌────────┴────────┐
+              ▼                 ▼
+          Продажи          Интернет-реклама
+```
+
+ClickHouse и Apache Superset рассматриваются как дополнительный
+аналитический слой проекта и развиваются отдельно.
+
+---
 
 ## Технологии
 
-### Архитектура данных
-MS SQL, Python (pandas, requests, pyodbc, openpyxl), Airflow, dbt, ClickHouse, Docker, Excel, Power Query
+### Data Engineering
+- Python
+- pandas
+- PostgreSQL
+- SQLAlchemy
+- psycopg2
+- Docker
+- Apache Airflow
 
-### BI-решения
-Power BI (DAX) и Apache Superset
+### Analytics Engineering
+- dbt
+- dbt tests
+- dbt documentation
+- PostgreSQL
 
-## Пайплайн проекта
-1. Подготовка данных в Excel с помощью Power Query: из `источник.xlsx` в `CarDealer.xlsx`.
+### BI
+- Power BI
+- DAX
+- Apache Superset — WIP
 
-   <img width="1461" height="732" alt="преобразование" src="https://github.com/user-attachments/assets/e6aa4a93-eac5-49ef-8738-1beb2f4e4e3d" />
+### Дополнительно
+- ClickHouse — WIP
+- Git / GitHub
 
-2. Перенос данных из Excel в `MS SQL` и одновременное сохранение raw-таблиц в `.csv`:
+---
 
-   [scripts/excel_to_db_csv.py](./scripts/excel_to_db_csv.py)
+## Data Pipeline
 
-3. Разовая загрузка исторических курсов валют ЦБ РФ за период проекта:
+### 1. Ingestion
 
-   [scripts/backfill_currency_rates.py](./scripts/backfill_currency_rates.py)
+Python-пайплайн загружает исходные данные из CSV и Excel.
 
-4. Ежедневное обновление курсов валют и пересборка `dbt` через `Airflow`:
+Основные этапы:
 
-   [airflow/dags/auto_dealer_dag.py](./airflow/dags/auto_dealer_dag.py)
-
-5. Построение витрин в `dbt`:
-
-   [car_dealer_dbt](./car_dealer_dbt)
-
-6. Создание таблиц в `ClickHouse` и загрузка в них готовых BI-витрин:
-
-   [scripts/load_clickhouse_views.py](./scripts/load_clickhouse_views.py)
-
-## dbt-слои
-
-### `staging`
-Слой приведения raw-источников к удобному аналитическому виду.
-
-В этом слое:
-- переименовываются поля и приводятся типы данных;
-- задаются тесты `not_null`, `unique`, `relationships`, `accepted_values`;
-- очищаются и стандартизируются справочники.
-
-Основные модели:
-- `stg_ga_sessions`
-- `stg_crm_events`
-- `stg_sales`
-- `stg_models`
-- `stg_brands`
-- `stg_classes`
-- `stg_mediums`
-- `stg_medium_groups`
-- `stg_currencies`
-- `stg_currency_rates`
-- `stg_clients`
-
-### `intermediate`
-Слой промежуточной бизнес-логики.
-
-В этом слое:
-- связываются продажи с сессиями;
-- рассчитываются `price_rub`, `gross_profit_rub`, `contribution_margin_rub`;
-- учитывается выплата рефералу `5%` от маржинальной прибыли по продаже;
-- формируются `final_ad_cost` и `final_contribution_margin_rub`;
-- подтягиваются бренд, класс, валюта и другие аналитические признаки.
-
-Основные модели:
-- `int_models_with_currency`
-- `int_sales_with_session`
-- `int_sales_enriched`
-- `int_sales`
-- `int_session_crm`
-
-### `views`
-Итоговые BI-витрины для анализа и визуализации.
-
-Основные витрины:
-- `dbo.v_sessions` — главная витрина по сессиям, продажам, CRM-событиям и рекламным расходам;
-- `dbo.v_clients` — клиентская агрегированная витрина;
-- `dbo.v_medium` — справочник medium для сортировки и фильтрации;
-- `dbo.v_medium_groups` — справочник групп рекламного трафика.
-
-## Airflow
-`Airflow` запущен в `Docker` и доступен по адресу:
-
-[http://localhost:8081](http://localhost:8081)
-
-### Использование
-В проекте `Airflow` отвечает за:
-- ежедневную догрузку актуальных курсов валют с сайта ЦБ РФ;
-- запуск `dbt build`.
-
-## ClickHouse
-`ClickHouse` поднят как отдельный сервис проекта в `Docker`.
-
-### Порты
-- HTTP: `8124`
-- Native: `9001`
-
-### Доступы
-- host: `127.0.0.1`
-- database: `car_dealer`
-- user: `analytics`
-- password: `analytics`
-
-### DDL
-DDL-скрипты для таблиц `ClickHouse` лежат в папке:
-
-[sql/clickhouse](./sql/clickhouse)
-
-### Важные технические нюансы загрузки
-1. Для `SSMS`-CSV с `NULL` используется:
-   `--format_csv_null_representation='NULL'`
-2. Для широкой витрины `v_sessions` используется `;` как разделитель.
-3. При повторной полной загрузке таблицы лучше очищать через `TRUNCATE TABLE`.
-
-## BI
-
-### Power BI
-В `Power BI` собран основной управленческий дашборд по продажам и эффективности интернет-рекламы.
-
-Ключевые блоки дашборда:
-- KPI по продажам, маржинальной прибыли, рекламным расходам и `ДРР`;
-- продажи по группам рекламного трафика;
-- эффективность этапов воронки продаж;
-- таблица эффективности кампаний и ключевых слов.
-
-Дашборд фокусируется на продажах, маржинальной прибыли, `ДРР` и эффективности каналов привлечения.
-
-<img width="1241" height="697" alt="full_screen" src="carDealer_screens/PBI_charts/full_screen.png" />
-
-<img width="1299" height="773" alt="интерактивность" src="carDealer_screens/PBI_charts/интерактивность.png" />
-
-<img width="1234" height="682" alt="модель_данныхPBI" src="carDealer_screens/PBI_charts/модель_данныхPBI.png" />
-
-<img width="1154" height="684" alt="справка_дашборд_PBI" src="carDealer_screens/PBI_charts/справка_дашборд_PBI.png" />
-
-<img width="1151" height="733" alt="справка_метрики_PBI" src="carDealer_screens/PBI_charts/справка_метрики_PBI.png" />
-
-
-### Superset
-`Superset` доступен по адресу:
-
-[http://localhost:8089/login/](http://localhost:8089/login/)
-
-Используется для:
-- подключения к `ClickHouse`;
-- построения альтернативного BI-дашборда;
-- анализа городов, моделей, групп просмотров страниц и маржинальной прибыли.
-
-В `Superset` собран альтернативный аналитический дашборд с акцентом на исследовательские срезы по городам, моделям и поведенческим группам клиентов.
-
-<img width="1865" height="825" alt="fullscreenSS" src="carDealer_screens/superset_charts/fullscreenSS.png" />
-
-<img width="1868" height="827" alt="fullscreenSS_filter" src="carDealer_screens/superset_charts/fullscreenSS_filter.png" />
-
-<img width="1102" height="660" alt="df_list" src="carDealer_screens/superset_charts/df_list.png" />
-
-<img width="701" height="541" alt="v_clients_dashbord" src="carDealer_screens/superset_charts/v_clients_dashbord.png" />
-
-<img width="595" height="459" alt="v_sessions_for_clients" src="carDealer_screens/superset_charts/v_sessions_for_clients.png" />
-
-## Результаты проекта
-- собрана end-to-end архитектура: `Excel -> MS SQL -> dbt -> ClickHouse -> Power BI / Superset`;
-- рассчитаны продажи, валовая и маржинальная прибыль, рекламные расходы и `ДРР`;
-- выделены 3 группы трафика: `органика`, `рефералы`, `доп. привлечение`;
-- построены витрины и дашборды для двух BI-инструментов;
-- найдены точки для оптимизации рекламных кампаний и оценки потенциала масштабирования каналов привлечения.
-
-
-## Docker-сервисы проекта
-Текущий `docker-compose` поднимает:
-- `airflow_autodealer` — `Airflow`;
-- `airflow_postgres_autodealer` — `Postgres` для `Airflow`;
-- `clickhouse_autodealer` — `ClickHouse`;
-- `superset_autodealer` — `Superset`;
-- `superset_postgres_autodealer` — `Postgres` для `Superset`.
-
-## Как запустить проект
-
-### 1. Поднять Docker-сервисы
-Из корня проекта:
-
-```powershell
-docker compose up -d --build
+``` text
+   Extract
+      ↓
+   Transform
+      ↓
+   Load
+      ↓
+   PostgreSQL raw
 ```
 
-Перед запуском убедитесь, что локальный `MS SQL Server` доступен по параметрам, указанным в `docker-compose.yaml`.
+**В ingestion реализованы:**
+- централизованная конфигурация;
+- логирование;
+- проверка наличия файлов;
+- нормализация исходных данных;
+- загрузка таблиц в PostgreSQL.
 
-### 2. Загрузить raw-данные из Excel в MS SQL
-```powershell
-python scripts/excel_to_db_csv.py
+Запуск:
+``` python
+python -m ingestion.main
 ```
 
-### 3. Загрузить исторические курсы валют
-```powershell
+### 2. PostgreSQL
+
+PostgreSQL используется как основное хранилище проекта.
+
+Исходные данные загружаются в raw schema.
+
+``` text
+PostgreSQL
+└── raw
+    ├── ga_sessions
+    ├── crm_events
+    ├── clients
+    ├── models
+    ├── brands
+    ├── classes
+    ├── mediums
+    ├── medium_groups
+    ├── prices
+    └── currency_rates
+```
+
+### dbt
+dbt используется для аналитического преобразования данных.
+
+#### Staging
+
+На staging-слое:
+- приводятся типы данных;
+- нормализуются названия колонок;
+- стандартизируются значения;
+- формируются аналитические ключи;
+- выполняются проверки качества данных.
+
+Основные модели:
+```text
+stg_ga_sessions
+stg_crm_events
+stg_clients
+stg_models
+stg_brands
+stg_classes
+stg_mediums
+stg_medium_groups
+stg_prices
+stg_currency_rates
+```
+
+Для моделей используются dbt tests:
+- `not_null`
+- `unique`
+- `relationships`
+- `accepted_values`
+
+#### Marts
+
+`mart_sales`
+Витрина для анализа продаж.
+
+Основные показатели:
+- количество продаж;
+- стоимость автомобиля;
+- маржинальная прибыль;
+- рекламные расходы;
+- contribution margin;
+- город;
+- бренд;
+- модель;
+- класс автомобиля.
+
+Grain:
+```text
+1 строка = 1 продажа
+```
+
+`mart_ad_effectiveness`
+Витрина для анализа интернет-рекламы.
+
+Основные показатели:
+- sessions;
+- conversion;
+- dealer meetings;
+- estimates;
+- sales;
+- ad cost;
+- margin;
+- contribution margin;
+- pageviews;
+- pageviews per session.
+
+Основные измерения:
+- medium;
+- campaign;
+- keyword;
+- domain;
+- source;
+- browser;
+- device;
+- city;
+- brand;
+- model;
+- class.
+
+### Курсы валют
+Для расчёта стоимости автомобилей в рублях используются
+официальные курсы Центрального банка РФ.
+
+Архитектура:
+```text
+CBR
+ ↓
+Python
+ ↓
+raw.currency_rates
+ ↓
+dbt
+ ↓
+marts
+```
+
+Исторические курсы загружаются отдельным скриптом:
+```python
 python scripts/backfill_currency_rates.py
 ```
 
-### 4. Пересобрать `dbt`-модели
-```powershell
-docker exec airflow_autodealer bash -lc "cd /opt/airflow/project && dbt build --project-dir car_dealer_dbt --profiles-dir car_dealer_dbt"
+Актуальный курс обновляется ежедневно через Airflow.
+
+#### Airflow
+Airflow используется для автоматизации регулярного обновления данных.
+
+Текущий DAG:
+```text
+update_currency_rates
+        ↓
+     dbt build
 ```
 
-### 5. Перезагрузить витрины в ClickHouse
-```powershell
-python scripts/load_clickhouse_views.py
+DAG:
+``` python
+airflow/dags/auto_dealer_dag.py
+```
+Airflow запускается в Docker.
+
+После запуска:
+```text
+http://localhost:8081
 ```
 
-### 6. Открыть BI-инструменты
-- `Airflow`: [http://localhost:8081](http://localhost:8081)
-- `ClickHouse HTTP`: [http://localhost:8124](http://localhost:8124)
-- `Superset`: [http://localhost:8089/login/](http://localhost:8089/login/)
+## Power BI
+
+В проекте реализованы две аналитические страницы
+и отдельная главная страница навигации.
+
+### 1. Отчёт по продажам
+
+**Цель**: понять, сколько автомобилей продано,
+на какую сумму и сколько маржинальной прибыли сформировано.
+
+**Основные показатели:**
+- продажи;
+- средняя стоимость автомобиля;
+- количество моделей;
+- продажи в день;
+- маржинальная прибыль;
+- маржинальность;
+- Contribution Margin.
+
+**Отчёт позволяет анализировать показатели:**
+- по периоду;
+- городу;
+- автомобилю.
+
+Также реализовано переключение между режимами
+анализа продаж и Contribution Margin.
+
+### 2. Эффективность интернет-рекламы
+
+Цель: понять, откуда приходит трафик,
+как пользователи проходят воронку и какие источники
+формируют продажи и маржинальную прибыль.
+
+Основные этапы воронки:
+```text
+Sessions
+   ↓
+Conversions
+   ↓
+Dealer meetings
+   ↓
+Estimates
+   ↓
+Sales
+```
+
+Основные показатели:
+- расходы на рекламу;
+- прибыль на 1 ₽ рекламы;
+- количество сессий;
+- конверсии;
+- продажи;
+- маржинальная прибыль;
+- ROMI.
+
+Для анализа можно менять гранулярность:
+- medium;
+- campaign;
+- keyword;
+- domain;
+- source;
+- device;
+- browser;
+- city;
+- brand;
+- class;
+- model;
+- pageviews.
+
+## Результат
+
+В результате проекта построен end-to-end pipeline:
+```text
+Source data
+    ↓
+Python ingestion
+    ↓
+PostgreSQL raw
+    ↓
+dbt staging
+    ↓
+dbt marts
+    ↓
+Power BI
+```
+
+Решение позволяет анализировать:
+- продажи;
+- стоимость автомобилей;
+- маржинальную прибыль;
+- contribution margin;
+- рекламные расходы;
+- конверсию;
+- воронку продаж;
+- эффективность рекламных каналов.
+
+## Особенности исходных данных
+
+Исходный набор данных является тестовым и содержит
+обезличенные данные.
+
+Для части исходных данных потребовалось восстановить
+аналитически необходимые значения и обеспечить согласованность
+между CRM, GA и справочниками.
+
+Отдельное внимание уделено:
+- сопоставлению CRM и GA;
+- датам продаж и сессий;
+- истории цен автомобилей;
+- валютам;
+- рекламным расходам;
+- согласованности справочников.
+
+Поэтому проект демонстрирует не только построение BI,
+но и работу с неполными и неоднородными исходными данными.
+
+## Запуск проекта
+
+1. Клонирование
+```bash
+git clone <repository-url>
+cd car-dealer
+```
+
+2. Настройка окружения
+Создать .env на основе:
+```text
+.env.example
+```
+
+3. Запуск Docker
+```bash
+docker compose up -d --build
+```
+
+4. Загрузка данных
+Поместить исходные файлы в:
+```text
+data/
+```
+
+После этого запустить:
+```bash
+python -m ingestion.main
+```
+
+5. Проверка dbt
+```bash
+docker exec airflow_autodealer \
+  dbt debug \
+  --project-dir /opt/airflow/project/dbt_project \
+  --profiles-dir /opt/airflow/project/dbt_project
+```
+
+6. Сборка dbt
+```bash
+docker exec airflow_autodealer \
+  dbt build \
+  --project-dir /opt/airflow/project/dbt_project \
+  --profiles-dir /opt/airflow/project/dbt_project
+```
+
+7. Airflow
+```text
+http://localhost:8081
+```
+
+## Что планируется развивать
+ClickHouse как аналитический serving layer;
+Apache Superset.

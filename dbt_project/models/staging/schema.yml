@@ -1,0 +1,137 @@
+version: 2
+
+models:
+
+  - name: stg_crm_events
+    description: "Clean staging layer for CRM events. Grain: 1 row = 1 CRM event."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: client_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: id
+      - name: dealer_meet
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: crm_sale
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+
+  - name: stg_mediums
+    description: "Clean staging layer for mediums. Grain: 1 row = 1 medium."
+    columns:
+      - name: medium_name
+        tests: [not_null, unique]
+      - name: medium_group_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_medium_groups')
+                field: id
+
+  - name: stg_medium_groups
+    description: "Clean staging layer for medium groups. Grain: 1 row = 1 medium group."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: medium_group_name
+        tests: [not_null, unique]
+
+  - name: stg_models
+    description: "Clean staging layer for car models. Grain: 1 row = 1 model."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: brand_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_brands')
+                field: id
+      - name: class_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_classes')
+                field: id
+
+  - name: stg_brands
+    description: "Clean staging layer for car brands. Grain: 1 row = 1 brand."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: brand_name
+        tests: [not_null, unique]
+
+  - name: stg_classes
+    description: "Clean staging layer for car classes. Grain: 1 row = 1 class."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: class_name
+        tests: [not_null, unique]
+
+  - name: stg_currency_rates
+    description: "Clean staging layer for currency rates. Grain: 1 row = 1 currency_code + rate_date."
+    columns:
+      - name: rate_date
+        tests: [not_null]
+      - name: currency_code
+        tests: [not_null]
+
+  - name: stg_ga_sessions
+    description: "Clean staging layer for GA sessions. Grain: 1 row = 1 session."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: ga_client_id
+        tests: [not_null]
+      - name: medium
+        tests:
+          - relationships:
+              arguments:
+                to: ref('stg_mediums')
+                field: medium_name
+      - name: conversion
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+
+  - name: stg_clients
+    description: "Clean staging layer for clients. Grain: 1 row = 1 client."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+
+  - name: stg_prices
+    description: "Clean staging layer for prices. Grain: 1 row = 1 price."
+    columns:
+      - name: id
+        tests: [not_null, unique]
+      - name: model_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_models')
+                field: id
+      - name: effective_date
+        tests: [not_null]
+      - name: price_original
+        tests: [not_null]
+      - name: margin_pct
+        tests: [not_null]
+      - name: currency_code
+        tests: [not_null]

@@ -1,6 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
-from datetime import date, timedelta
+from datetime import date
 
 import psycopg2
 import requests
@@ -20,7 +20,8 @@ POSTGRES_DB = os.getenv("POSTGRES_DB", "car_dealer")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "analytics")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
-ARCHIVE_URL = "https://www.cbr.ru/scripts/XML_daily.asp"
+
+CBR_URL = "https://www.cbr.ru/scripts/XML_daily.asp"
 
 
 def get_connection():
@@ -41,68 +42,34 @@ def ensure_currency_rates_table(cursor):
             currency_code VARCHAR(10) NOT NULL,
             nominal INTEGER NOT NULL,
             rate_value NUMERIC(18, 6) NOT NULL,
-            update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            update_timestamp TIMESTAMP NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
 
             PRIMARY KEY (rate_date, currency_code)
         );
         """
     )
 
+
 SUPPORTED_CURRENCY_CODES = ("USD", "EUR", "CNY")
 
 def get_supported_currency_codes():
     return list(SUPPORTED_CURRENCY_CODES)
 
-def get_project_date_range(cursor):
-    cursor.execute(
-        """
-        SELECT
-            LEAST(
-                (
-                    SELECT MIN(sale_date::date)
-                    FROM raw.crm_events
-                    WHERE sale_date IS NOT NULL
-                ),
-                (
-                    SELECT MIN(date::date)
-                    FROM raw.ga_sessions
-                    WHERE date IS NOT NULL
-                )
-            ) AS start_date,
-
-            GREATEST(
-                (
-                    SELECT MAX(sale_date::date)
-                    FROM raw.crm_events
-                    WHERE sale_date IS NOT NULL
-                ),
-                (
-                    SELECT MAX(date::date)
-                    FROM raw.ga_sessions
-                    WHERE date IS NOT NULL
-                )
-            ) AS end_date;
-        """
-    )
-
-    row = cursor.fetchone()
-
-    return row[0], row[1]
-
-
-def get_rates_for_date(rate_date, currencies):
+def get_rates_for_today(currencies):
     response = requests.get(
-        ARCHIVE_URL,
+        CBR_URL,
         params={
-            "date_req": rate_date.strftime("%d/%m/%Y")
+            "date_req": date.today().strftime("%d/%m/%Y")
         },
-        timeout=40,
+        timeout=30,
     )
 
     response.raise_for_status()
 
     root = ET.fromstring(response.content)
 
+    rate_date = date.today()
     rates = []
 
     for node in root.findall("Valute"):
@@ -111,7 +78,9 @@ def get_rates_for_date(rate_date, currencies):
         if code not in currencies:
             continue
 
-        nominal = int(node.findtext("Nominal"))
+        nominal = int(
+            node.findtext("Nominal")
+        )
 
         value = float(
             node.findtext("Value").replace(",", ".")
@@ -125,7 +94,7 @@ def get_rates_for_date(rate_date, currencies):
             )
         )
 
-    return rates
+    return rate_date, rates
 
 
 def upsert_rates(cursor, rate_date, rates):
@@ -160,12 +129,13 @@ def upsert_rates(cursor, rate_date, rates):
 
 
 def main():
-    print("Starting currency rates backfill...")
+    print("Starting currency rates update...")
 
     conn = get_connection()
 
     try:
         with conn.cursor() as cursor:
+
             ensure_currency_rates_table(cursor)
 
             currency_codes = get_supported_currency_codes()
@@ -174,50 +144,21 @@ def main():
                 f"Supported currencies: {currency_codes}"
             )
 
-            start_date, end_date = get_project_date_range(
-                cursor
+            rate_date, rates = get_rates_for_today(
+                currencies=currency_codes
             )
 
-            if start_date is None or end_date is None:
-                raise ValueError(
-                    "Could not determine project date range."
-                )
-
-            print(
-                f"Project period: "
-                f"{start_date} - {end_date}"
+            upsert_rates(
+                cursor,
+                rate_date,
+                rates,
             )
-
-            current_date = start_date
-            rows_written = 0
-
-            while current_date <= end_date:
-
-                print(
-                    f"Loading rates for "
-                    f"{current_date}..."
-                )
-
-                rates = get_rates_for_date(
-                    current_date,
-                    currency_codes,
-                )
-
-                upsert_rates(
-                    cursor,
-                    current_date,
-                    rates,
-                )
-
-                rows_written += len(rates)
-
-                current_date += timedelta(days=1)
 
             conn.commit()
 
             print(
-                f"Backfill completed. "
-                f"Rows written: {rows_written}"
+                f"Updated rates for {rate_date}: "
+                f"{len(rates)} records."
             )
 
     except Exception:
