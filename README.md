@@ -290,8 +290,14 @@ http://localhost:8081
 - городу;
 - автомобилю.
 
+<img width="1234" height="762" alt="sales1" src="screens/power_bi/sales1.png" />
+
+
 Также реализовано переключение между режимами
 анализа продаж и Contribution Margin.
+
+<img width="1241" height="770" alt="sales2" src="screens/power_bi/sales2.png" />
+
 
 ### 2. Эффективность интернет-рекламы
 
@@ -334,6 +340,11 @@ Sales
 - class;
 - model;
 - pageviews.
+
+<img width="1197" height="783" alt="ads1" src="screens/power_bi/ads1.png" />
+
+<img width="1240" height="867" alt="ads2" src="screens/power_bi/ads2.png" />
+
 
 ---
 
