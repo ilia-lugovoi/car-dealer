@@ -292,11 +292,15 @@ http://localhost:8081
 
 <img width="1234" height="762" alt="sales1" src="screens/power_bi/sales1.png" />
 
+<img width="1228" height="758" alt="sales3" src="screens/power_bi/sales3.png" />
+
 
 Также реализовано переключение между режимами
 анализа продаж и Contribution Margin.
 
 <img width="1241" height="770" alt="sales2" src="screens/power_bi/sales2.png" />
+
+<img width="1230" height="762" alt="sales4" src="screens/power_bi/sales4.png" />
 
 
 ### 2. Эффективность интернет-рекламы
@@ -341,9 +345,9 @@ Sales
 - model;
 - pageviews.
 
-<img width="1197" height="783" alt="ads1" src="screens/power_bi/ads1.png" />
+<img width="1338" height="863" alt="ads1" src="screens/power_bi/ads1.png" />
 
-<img width="1240" height="867" alt="ads2" src="screens/power_bi/ads2.png" />
+<img width="1324" height="860" alt="ads2" src="screens/power_bi/ads2.png" />
 
 
 ---
